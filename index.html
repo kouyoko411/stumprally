@@ -3,42 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QRスキャン｜すずかぜスタンプラリー</title>
+<title>すずかぜスタンプラリー</title>
 <style>
   :root{
     --aqua-50:#f0fbff; --aqua-100:#e0f6ff; --aqua-200:#c2ecfb;
     --aqua-300:#9adcf3; --aqua-400:#5cc4e8; --aqua-500:#2ba6d4;
     --aqua-600:#1b87b5; --aqua-700:#166b91; --ink:#0f3a4a;
-    --ink-soft:#4a7285; --danger:#e2556b;
+    --ink-soft:#4a7285; --white:#ffffff; --danger:#e2556b; --gold:#f2b705;
     --shadow:0 8px 28px rgba(27,135,181,.16);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
     color:var(--ink);background:linear-gradient(160deg,#eafaff 0%,#d5f1fb 45%,#c2ecfb 100%);min-height:100vh}
-  .app{max-width:440px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+  .app{max-width:440px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
   .topbar{padding:18px 20px 14px;display:flex;align-items:center;gap:10px;
     background:linear-gradient(120deg,var(--aqua-500),var(--aqua-400));color:#fff;box-shadow:var(--shadow);
-    border-bottom-left-radius:22px;border-bottom-right-radius:22px}
+    position:sticky;top:0;z-index:5;border-bottom-left-radius:22px;border-bottom-right-radius:22px}
   .topbar .logo{font-size:26px}
-  .topbar h1{font-size:17px;margin:0;font-weight:700}
+  .topbar h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.02em}
   .topbar .sub{font-size:11px;opacity:.9;margin-top:1px}
-  .content{flex:1;padding:18px 18px 40px}
-  .card{background:#fff;border-radius:20px;padding:22px;box-shadow:var(--shadow);border:1px solid var(--aqua-100)}
+  .me{margin-left:auto;text-align:right;font-size:11px;line-height:1.4}
+  .me b{font-size:14px}
+  .content{flex:1;padding:18px 18px 96px}
+  .card{background:var(--white);border-radius:20px;padding:22px;box-shadow:var(--shadow);border:1px solid var(--aqua-100)}
   .card + .card{margin-top:16px}
   h2{font-size:16px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
   label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px}
-  input{width:100%;padding:14px;border:2px solid var(--aqua-200);border-radius:14px;font-size:17px;color:var(--ink);background:var(--aqua-50)}
-  input:focus{outline:none;border-color:var(--aqua-400);background:#fff;box-shadow:0 0 0 4px rgba(92,196,232,.18)}
-  .btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;
-    background:linear-gradient(120deg,var(--aqua-500),var(--aqua-600));box-shadow:0 6px 16px rgba(27,135,181,.3);cursor:pointer;margin-top:6px}
+  input[type=text],input[type=tel],input[type=number],select{width:100%;padding:14px;border:2px solid var(--aqua-200);border-radius:14px;font-size:17px;color:var(--ink);background:var(--aqua-50);transition:.15s}
+  input:focus,select:focus{outline:none;border-color:var(--aqua-400);background:#fff;box-shadow:0 0 0 4px rgba(92,196,232,.18)}
+  .btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(120deg,var(--aqua-500),var(--aqua-600));box-shadow:0 6px 16px rgba(27,135,181,.3);cursor:pointer;margin-top:6px;transition:.12s}
   .btn:active{transform:translateY(1px)}
   .btn:disabled{opacity:.5}
   .btn.ghost{background:#fff;color:var(--aqua-600);border:2px solid var(--aqua-300);box-shadow:none}
   .hint{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
   .err{color:var(--danger);font-size:13px;margin-top:8px;font-weight:600;min-height:18px}
-  .me{background:var(--aqua-50);border:1px solid var(--aqua-200);border-radius:14px;padding:10px 14px;font-size:13px;color:var(--ink-soft);margin-bottom:14px}
-  .me b{color:var(--aqua-600);font-size:15px}
+  .stats{display:flex;gap:12px;margin-bottom:16px}
+  .stat{flex:1;background:linear-gradient(150deg,var(--aqua-100),var(--aqua-50));border-radius:18px;padding:16px 12px;text-align:center;border:1px solid var(--aqua-200)}
+  .stat .num{font-size:30px;font-weight:800;color:var(--aqua-600);line-height:1}
+  .stat .lbl{font-size:11px;color:var(--ink-soft);margin-top:6px}
+  .progress{height:10px;background:var(--aqua-100);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--aqua-400),var(--aqua-500));border-radius:99px;transition:width .4s}
   #reader{border-radius:16px;overflow:hidden;border:2px solid var(--aqua-200)}
+  .tabs{display:flex;background:var(--aqua-100);border-radius:14px;padding:4px;margin-bottom:14px}
+  .tabs button{flex:1;padding:10px;border:none;background:transparent;border-radius:11px;font-weight:700;color:var(--ink-soft);font-size:14px}
+  .tabs button.on{background:#fff;color:var(--aqua-600);box-shadow:0 2px 6px rgba(27,135,181,.15)}
+  .subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .subtabs button{padding:6px 14px;border-radius:99px;border:2px solid var(--aqua-200);background:#fff;font-size:13px;color:var(--aqua-700);font-weight:600}
+  .subtabs button.on{background:var(--aqua-500);color:#fff;border-color:var(--aqua-500)}
+  .rank{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--aqua-100)}
+  .rank .pos{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:var(--aqua-100);color:var(--aqua-700);font-size:14px;flex-shrink:0}
+  .rank.me{background:var(--aqua-50);border-radius:14px;border-bottom:none}
+  .rank.me .id{color:var(--aqua-600);font-weight:800}
+  .pos.g1{background:linear-gradient(135deg,#ffe066,#f2b705);color:#5a4500}
+  .pos.g2{background:linear-gradient(135deg,#e3ebef,#b8c6cd);color:#3d4a50}
+  .pos.g3{background:linear-gradient(135deg,#f0c9a0,#cf9b6b);color:#5a3a1e}
+  .rank .id{flex:1;font-size:15px;font-variant-numeric:tabular-nums}
+  .rank .pt{font-weight:800;color:var(--aqua-600);font-size:15px}
+  .rank .pt span{font-size:11px;color:var(--ink-soft);font-weight:600}
+  .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);display:flex;border-top:1px solid var(--aqua-100);z-index:8}
+  .nav button{flex:1;border:none;background:none;padding:9px 0 12px;font-size:10.5px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .nav button .ic{font-size:20px}
+  .nav button.on{color:var(--aqua-600)}
   .hidden{display:none!important}
   .badge{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--aqua-100);color:var(--aqua-700);font-size:12px;font-weight:700}
   .modal{position:fixed;inset:0;background:rgba(9,40,52,.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:20}
@@ -50,81 +75,224 @@
   .modal .bonus{margin:10px 0;padding:10px;background:linear-gradient(120deg,#fff6d6,#ffe9a8);border-radius:14px;color:#7a5c00;font-weight:700;font-size:14px}
   .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--aqua-200);border-top-color:var(--aqua-500);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle}
   @keyframes sp{to{transform:rotate(360deg)}}
+  .daishi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .daishi-head button{border:2px solid var(--aqua-200);background:#fff;color:var(--aqua-600);border-radius:10px;width:36px;height:36px;font-size:18px;font-weight:800}
+  .daishi-head .mon{font-weight:800;font-size:16px;color:var(--ink)}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .dow{text-align:center;font-size:11px;color:var(--ink-soft);font-weight:700;padding:2px 0}
+  .cal .cell{aspect-ratio:1;border:1px solid var(--aqua-100);border-radius:8px;background:var(--aqua-50);padding:2px;position:relative;overflow:hidden}
+  .cal .cell.empty{background:transparent;border:none}
+  .cal .cell .dnum{position:absolute;top:1px;left:3px;font-size:9px;color:var(--ink-soft);font-weight:700}
+  .cal .cell.today{border-color:var(--aqua-400);box-shadow:0 0 0 2px rgba(92,196,232,.3) inset}
+  .cal .marks{position:absolute;inset:11px 1px 1px;display:flex;flex-wrap:wrap;gap:1px;align-content:flex-start;justify-content:center}
+  .hanko{width:15px;height:15px;border-radius:50%;border:1.5px solid #e2556b;color:#e2556b;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;background:rgba(226,85,107,.06);line-height:1}
+  .hanko.more{border-color:var(--aqua-500);color:var(--aqua-600);background:rgba(43,166,212,.08)}
+  .gridwrap{margin-top:6px}
+  .grow{display:flex;align-items:center;gap:3px;margin-bottom:3px}
+  .gcells{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;flex:1}
+  .gcell{aspect-ratio:1;border:1px dashed var(--aqua-200);border-radius:6px;background:var(--aqua-50);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--ink-soft)}
+  .gcell.on{border-style:solid;border-color:var(--aqua-400);background:#fff;color:var(--aqua-600)}
+  .gtotal{width:30px;text-align:right;font-size:11px;font-weight:800;color:var(--aqua-600)}
+  .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+  .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative}
+  .scell.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .scell .nm{font-size:14px;font-weight:800}
+  .scell .ck{position:absolute;top:3px;right:5px;font-size:11px}
+  .scell.got .ck{color:var(--aqua-500)}
+  .complete{text-align:center;font-weight:800;color:var(--aqua-600);margin:4px 0 2px;font-size:15px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <span class="logo">❄️</span>
-    <div><h1>QRスキャン</h1><div class="sub">名札のQRコードを読み取ろう</div></div>
+    <div><h1>すずかぜスタンプラリー</h1><div class="sub">校内スタッフとまじわろう</div></div>
+    <div class="me hidden" id="meBox"><div>生徒番号</div><b id="meId">—</b></div>
   </div>
+
   <div class="content">
- 
-    <!-- 生徒番号が未取得のとき -->
-    <section id="scNeedId" class="card hidden">
-      <h2>🔑 生徒番号の確認</h2>
-      <div class="hint" style="margin-top:0">ログイン情報が引き継がれませんでした。生徒番号を入力してください。</div>
-      <label style="margin-top:12px">生徒番号（7〜8桁の数字）</label>
-      <input type="tel" id="sidInput" inputmode="numeric" placeholder="例：12345678" maxlength="8">
-      <div class="err" id="sidErr"></div>
-      <button class="btn" onclick="setSid()">次へ</button>
+    <!-- ログイン -->
+    <section id="scLogin">
+      <div class="card">
+        <h2>🔑 ログイン</h2>
+        <label>生徒番号（7〜8桁の数字）</label>
+        <input type="tel" id="loginId" inputmode="numeric" placeholder="例：12345678" maxlength="8">
+        <div class="err" id="loginErr"></div>
+        <button class="btn" id="loginBtn" onclick="doLogin()">はじめる</button>
+        <div class="hint">※ 氏名などの個人情報は登録・表示されません。</div>
+      </div>
     </section>
- 
-    <!-- スキャン画面 -->
+
+    <!-- ホーム -->
+    <section id="scHome" class="hidden">
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="num" id="hPts">0</div><div class="lbl">合計ポイント</div></div>
+          <div class="stat"><div class="num" id="hStaff">0</div><div class="lbl">出会ったスタッフ</div></div>
+        </div>
+        <label>次のボーナスまで（5人ごとに +3pt）</label>
+        <div class="progress"><i id="hBar" style="width:0%"></i></div>
+        <div class="hint" id="hBonusMsg"></div>
+      </div>
+      <div class="card">
+        <h2>📸 スタンプを集める</h2>
+        <div class="hint" style="margin-top:0">名札のQRを読み取り、今日受けた授業数（0〜10）を申告しよう。<br>その日最初の読み取りで<b>登校ポイント+1</b>。0（自習）は1日1回まで。</div>
+        <button class="btn" onclick="go('scScan')">QRコードを読み取る</button>
+      </div>
+    </section>
+
+    <!-- QRスキャン -->
     <section id="scScan" class="hidden">
       <div class="card">
-        <div class="me">生徒番号：<b id="meId">—</b></div>
         <h2>📸 QRコード読み取り</h2>
         <div id="reader"></div>
         <div class="err" id="scanErr"></div>
-        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください（スタッフ用ツールで代替付与できます）。</div>
-        <button class="btn ghost" id="backBtn" onclick="goApp()">アプリに戻る</button>
+        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。</div>
+        <button class="btn ghost" onclick="go('scHome')">もどる</button>
       </div>
     </section>
- 
+
+    <!-- スタンプ台紙 -->
+    <section id="scDaishi" class="hidden">
+      <div class="card">
+        <h2>📖 スタンプ台紙</h2>
+        <div class="daishi-head">
+          <button onclick="calMove(-1)">‹</button>
+          <div class="mon" id="calMon">—</div>
+          <button onclick="calMove(1)">›</button>
+        </div>
+        <div class="cal" id="calGrid"></div>
+        <div class="hint">その日に交流したスタッフのハンコが並びます（4人以上は「+n」表示）。</div>
+      </div>
+      <div class="card">
+        <h2>🧮 受講スタンプ（通算）</h2>
+        <div class="gridwrap" id="gridWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">受講1コマにつき1マス、申告のたびに左上から順に押されます。</div>
+      </div>
+      <div class="card">
+        <h2>🎯 スタッフ収集状況</h2>
+        <div class="complete" id="completeMsg">—</div>
+        <div class="staffgrid" id="staffGrid"></div>
+        <div class="hint">色付き＝取得済み。うすい枠＝まだ会えていないスタッフ。</div>
+      </div>
+    </section>
+
+    <!-- ランキング -->
+    <section id="scRank" class="hidden">
+      <div class="card">
+        <h2>🏆 ランキング</h2>
+        <div class="tabs">
+          <button id="tAll" class="on" onclick="rankTab('all')">全体</button>
+          <button id="tGrade" onclick="rankTab('grade')">学年別</button>
+        </div>
+        <div class="subtabs hidden" id="gradeTabs"></div>
+        <div id="rankList"><div class="hint">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint" id="rankMeta"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="nav hidden" id="nav">
+    <button id="nHome" class="on" onclick="go('scHome')"><span class="ic">🏠</span>ホーム</button>
+    <button id="nScan" onclick="go('scScan')"><span class="ic">📸</span>読み取り</button>
+    <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
+    <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
+    <button onclick="logout()"><span class="ic">🚪</span>ログアウト</button>
   </div>
 </div>
- 
+
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ====================================================================
  *  設定：デプロイ後にここを自分の値へ書き換える
+ *  GAS_URL … GASウェブアプリ(API)の /exec URL
  * ==================================================================== */
-var GAS_URL  = 'https://script.google.com/macros/s/AKfycbwxA0SMa4kK41IB8QXR4-HY7wH0Tr_-E_FYNFxjzbkiI61rKHSTpkSZDvgYfnYgg3ywew/exec'; // ← GASウェブアプリURL
-var APP_URL  = GAS_URL;   // 「アプリに戻る」の遷移先（生徒用GAS画面）
+var GAS_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXX/exec';
 /* ==================================================================== */
- 
-var me=null, qr=null, scanning=false, lastScanAt=0, busy=false;
- 
-/* ---- 生徒番号の取得：URLパラメータ ?sid= → localStorage の順 ---- */
-function getParam(k){ return new URLSearchParams(location.search).get(k); }
-window.addEventListener('load', function(){
-  var sid = getParam('sid') || localStorage.getItem('sr_id');
-  if(sid && /^[0-9]{7,8}$/.test(sid)){ me=sid; localStorage.setItem('sr_id', sid); startFlow(); }
-  else { document.getElementById('scNeedId').classList.remove('hidden'); }
+
+var me=null, meGrade=null, rankMode='all', rankGrade=null, qr=null, scanning=false, lastScanAt=0, busy=false;
+
+/* ---- GAS API 呼び出し（CORS回避：text/plainの単純リクエスト） ---- */
+function api(action, payload){
+  var body = Object.assign({action:action}, payload||{});
+  return fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json(); });
+}
+
+/* ---- セッション保持（sessionStorage：仕様2.1 初期実装） ---- */
+function saveSession(id,grade){ try{sessionStorage.setItem('sr_id',id);sessionStorage.setItem('sr_grade',grade||'');}catch(e){} }
+function clearSession(){ try{sessionStorage.removeItem('sr_id');sessionStorage.removeItem('sr_grade');}catch(e){} }
+window.addEventListener('load',function(){
+  var id=null; try{id=sessionStorage.getItem('sr_id');}catch(e){}
+  if(id){ me=id; meGrade=sessionStorage.getItem('sr_grade'); enterApp(); refreshHome(); }
 });
-function setSid(){
-  var v=document.getElementById('sidInput').value.trim();
-  var e=document.getElementById('sidErr');
-  if(!/^[0-9]+$/.test(v)){ e.textContent='数字のみで入力してください'; return; }
-  if(v.length<7||v.length>8){ e.textContent='生徒番号は7〜8桁で入力してください'; return; }
-  me=v; localStorage.setItem('sr_id', v);
-  document.getElementById('scNeedId').classList.add('hidden');
-  startFlow();
+
+/* ---- ログイン ---- */
+function doLogin(){
+  var v=document.getElementById('loginId').value.trim();
+  var e=document.getElementById('loginErr');
+  if(!/^[0-9]+$/.test(v)){e.textContent='数字のみで入力してください（全角・記号は不可）';return;}
+  if(v.length<7||v.length>8){e.textContent='生徒番号は7〜8桁で入力してください';return;}
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.innerHTML='確認中… <span class="spin"></span>'; e.textContent='';
+  api('login',{studentId:v}).then(function(r){
+    btn.disabled=false; btn.textContent='はじめる';
+    if(!r.ok){ e.textContent=r.msg; return; }
+    me=r.studentId; meGrade=r.grade; saveSession(me,meGrade); enterApp(r.summary);
+  }).catch(function(){
+    btn.disabled=false; btn.textContent='はじめる'; e.textContent='通信エラー。もう一度お試しください。';
+  });
 }
-function startFlow(){
+function enterApp(summary){
+  document.getElementById('scLogin').classList.add('hidden');
+  document.getElementById('nav').classList.remove('hidden');
+  document.getElementById('meBox').classList.remove('hidden');
   document.getElementById('meId').textContent=me;
-  document.getElementById('scScan').classList.remove('hidden');
-  startScan();
+  if(summary) applySummary(summary);
+  go('scHome');
 }
- 
-/* ---- カメラ起動＆QR読取 ---- */
+function logout(){
+  stopScan(); clearSession(); me=null;
+  document.getElementById('nav').classList.add('hidden');
+  document.getElementById('meBox').classList.add('hidden');
+  ['scHome','scScan','scDaishi','scRank'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById('scLogin').classList.remove('hidden');
+  document.getElementById('loginId').value='';
+}
+
+/* ---- 画面遷移 ---- */
+function go(id){
+  ['scHome','scScan','scDaishi','scRank'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
+  var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scRank:'nRank'};
+  if(map[id]) document.getElementById(map[id]).classList.add('on');
+  if(id==='scScan') startScan(); else stopScan();
+  if(id==='scHome') refreshHome();
+  if(id==='scDaishi') loadDaishi();
+  if(id==='scRank') loadRanking();
+}
+
+/* ---- ホーム ---- */
+function refreshHome(){ api('summary',{studentId:me}).then(applySummary).catch(function(){}); }
+function applySummary(s){
+  if(!s) return;
+  document.getElementById('hPts').textContent=s.points;
+  document.getElementById('hStaff').textContent=s.staffCount;
+  var within=s.staffCount%5;
+  document.getElementById('hBar').style.width=(within/5*100)+'%';
+  document.getElementById('hBonusMsg').textContent='あと '+s.needForBonus+' 人のスタッフと交流すると +3pt ボーナス！（累計 '+s.staffCount+' 人）';
+}
+
+/* ---- QRスキャン（カメラ） ---- */
 function startScan(){
   if(scanning) return;
   document.getElementById('scanErr').textContent='';
   qr=new Html5Qrcode("reader");
   scanning=true;
-  qr.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}}, onScan, function(){})
+  qr.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}},onScan,function(){})
     .catch(function(){ scanning=false; document.getElementById('scanErr').textContent='カメラを起動できませんでした。ブラウザのカメラ権限を許可してください。'; });
 }
 function stopScan(){
@@ -133,12 +301,8 @@ function stopScan(){
 function onScan(text){
   var now=Date.now();
   if(busy || now-lastScanAt<2500) return;
-  lastScanAt=now;
-  stopScan();
-  askLessons(text.trim());
+  lastScanAt=now; stopScan(); askLessons(text.trim());
 }
- 
-/* ---- 受講数入力 → GASへ送信（0〜10。0は自習等・1日1回まで） ---- */
 function askLessons(token, presetErr){
   var box=document.createElement('div'); box.className='modal';
   box.innerHTML='<div class="box"><div class="emoji">📸</div><h3>QRを読み取りました</h3>'
@@ -153,59 +317,130 @@ function askLessons(token, presetErr){
     var n=parseInt(document.getElementById('lessonInput').value,10);
     if(isNaN(n)||n<0||n>10){ document.getElementById('lessonErr').textContent='0〜10で入力してください'; return; }
     var b=document.getElementById('lessonOk'); b.disabled=true; b.innerHTML='送信中… <span class="spin"></span>';
-    sendClaim(token, n, box);
+    busy=true;
+    api('claim',{studentId:me, staffToken:token, lessons:n}).then(function(r){
+      busy=false;
+      if(!r.ok){
+        if(r.zeroLimit){ box.remove(); askLessons(token, r.msg); return; }
+        box.remove(); resultModal('⚠️','エラー', r.msg||'付与に失敗しました', null, null); return;
+      }
+      box.remove();
+      if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); applySummary(r.summary); return; }
+      var total=(r.attend||0)+(r.added||0)+(r.bonus||0);
+      var parts=[]; if(r.attend)parts.push('登校 +'+r.attend); parts.push('受講 +'+r.added); if(r.bonus)parts.push('ボーナス +'+r.bonus);
+      resultModal('✨','スタンプ獲得！','+'+total+' pt',
+        (r.attend?'🏫 登校ポイント +'+r.attend:'')+(r.bonus?'　🎉 スタッフ '+r.staffCount+'人達成 +'+r.bonus:''),
+        parts.join('　/　'));
+      applySummary(r.summary);
+    }).catch(function(){
+      busy=false; box.remove(); resultModal('⚠️','通信エラー','もう一度お試しください', null, null);
+    });
   };
 }
- 
-/* ---- CORS回避：text/plain の単純リクエストでPOST ---- */
-function sendClaim(token, lessons, box){
-  busy=true;
-  fetch(GAS_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'}, // ← application/json にしない（preflight回避）
-    body: JSON.stringify({ action:'claim', studentId:me, staffToken:token, lessons:lessons })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(r){
-    busy=false;
-    if(!r.ok){
-      // 「0」申告1日1回オーバー等は、入力画面に戻して選び直させる
-      if(r.zeroLimit){ box.remove(); askLessons(token, r.msg); return; }
-      box.remove(); resultModal('⚠️','エラー', r.msg||'付与に失敗しました', null, null); return;
-    }
-    box.remove();
-    if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); return; }
-    var total = (r.attend||0) + (r.added||0) + (r.bonus||0);
-    var parts = [];
-    if(r.attend) parts.push('登校 +'+r.attend);
-    parts.push('受講 +'+r.added);
-    if(r.bonus) parts.push('ボーナス +'+r.bonus);
-    resultModal('✨','スタンプ獲得！','+'+total+' pt',
-      (r.attend? '🏫 登校ポイント +'+r.attend+(r.bonus? '　🎉 スタッフ '+r.staffCount+'人達成 +'+r.bonus:''):
-                 (r.bonus? '🎉 スタッフ '+r.staffCount+'人達成ボーナス +'+r.bonus+'pt！':null)),
-      parts.join('　/　'));
-  })
-  .catch(function(){
-    busy=false; box.remove();
-    resultModal('⚠️','通信エラー','電波状況を確認してもう一度お試しください', null, null);
-  });
-}
- 
 function resultModal(emoji,title,big,bonus,sub){
   var m=document.createElement('div'); m.className='modal';
   m.innerHTML='<div class="box"><div class="emoji">'+emoji+'</div><h3>'+title+'</h3><div class="big">'+big+'</div>'
     +(sub?'<div class="badge">'+sub+'</div>':'')+(bonus?'<div class="bonus">'+bonus+'</div>':'')
     +'<button class="btn" id="rmOk">続けて読み取る</button>'
-    +'<button class="btn ghost" id="rmBack">アプリに戻る</button></div>';
+    +'<button class="btn ghost" id="rmHome">ホームへ</button></div>';
   document.body.appendChild(m);
-  document.getElementById('rmOk').onclick=function(){ m.remove(); startScan(); };
-  document.getElementById('rmBack').onclick=function(){ m.remove(); goApp(); };
+  document.getElementById('rmOk').onclick=function(){ m.remove(); go('scScan'); };
+  document.getElementById('rmHome').onclick=function(){ m.remove(); go('scHome'); };
 }
- 
-/* ---- 生徒番号を付けてGASアプリへ戻る（ログイン状態の引き継ぎ） ---- */
-function goApp(){
-  stopScan();
-  location.href = APP_URL + (APP_URL.indexOf('?')>=0?'&':'?') + 'sid=' + encodeURIComponent(me);
+
+/* ---- スタンプ台紙 ---- */
+var histData=null, calYear=null, calMonth=null;
+function loadDaishi(){
+  document.getElementById('gridWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  document.getElementById('calGrid').innerHTML=''; document.getElementById('staffGrid').innerHTML='';
+  api('history',{studentId:me}).then(function(h){
+    if(!h||!h.ok){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました</div>'; return; }
+    histData=h;
+    if(calYear===null){
+      var last=h.stamps.length?h.stamps[h.stamps.length-1].date:null;
+      var d=last?new Date(last+'T00:00:00'):new Date();
+      calYear=d.getFullYear(); calMonth=d.getMonth();
+    }
+    renderCalendar(); renderGrid(h.grid); renderStaff(h);
+  }).catch(function(){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+}
+function calMove(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+function pad2(n){return (n<10?'0':'')+n;}
+function renderCalendar(){
+  if(!histData) return;
+  document.getElementById('calMon').textContent=calYear+'年 '+(calMonth+1)+'月';
+  var byDate=histData.calendar||{};
+  var startDow=new Date(calYear,calMonth,1).getDay();
+  var days=new Date(calYear,calMonth+1,0).getDate();
+  var today=(function(){var t=new Date();return t.getFullYear()+'-'+pad2(t.getMonth()+1)+'-'+pad2(t.getDate());})();
+  var html='';
+  ['日','月','火','水','木','金','土'].forEach(function(d){html+='<div class="dow">'+d+'</div>';});
+  for(var i=0;i<startDow;i++) html+='<div class="cell empty"></div>';
+  for(var day=1;day<=days;day++){
+    var key=calYear+'-'+pad2(calMonth+1)+'-'+pad2(day);
+    var list=byDate[key]||[]; var marks='';
+    list.slice(0,3).forEach(function(s){
+      var rot=(Math.random()*24-12).toFixed(1);
+      marks+='<div class="hanko" style="transform:rotate('+rot+'deg)">'+esc(s.name).slice(0,2)+'</div>';
+    });
+    if(list.length>3) marks+='<div class="hanko more">+'+(list.length-3)+'</div>';
+    html+='<div class="cell'+(key===today?' today':'')+'"><span class="dnum">'+day+'</span><div class="marks">'+marks+'</div></div>';
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function renderGrid(grid){
+  grid=grid||[];
+  var rows=Math.max(1,Math.ceil(grid.length/10)),html='';
+  for(var r=0;r<rows;r++){
+    var cells='';
+    for(var c=0;c<10;c++){var idx=r*10+c; cells+= idx<grid.length ? '<div class="gcell on">'+esc(grid[idx]).slice(0,2)+'</div>' : '<div class="gcell"></div>';}
+    var cum=Math.min(grid.length,(r+1)*10), filled=Math.min(10,grid.length-r*10);
+    html+='<div class="grow"><div class="gcells">'+cells+'</div><div class="gtotal">'+(filled>0?cum:'')+'</div></div>';
+  }
+  document.getElementById('gridWrap').innerHTML=html+'<div class="hint" style="margin-top:4px">通算受講コマ数：<b>'+grid.length+'</b></div>';
+}
+function renderStaff(h){
+  document.getElementById('completeMsg').textContent=(h.staffTotal||25)+'人中 '+h.collectedCount+'人 達成！';
+  var html='';
+  (h.staff||[]).forEach(function(s){
+    html+='<div class="scell'+(s.collected?' got':'')+'"><span class="ck">'+(s.collected?'✓':'')+'</span><span class="nm">'+esc(s.name).slice(0,2)+'</span></div>';
+  });
+  document.getElementById('staffGrid').innerHTML=html;
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* ---- ランキング ---- */
+function rankTab(mode){
+  rankMode=mode;
+  document.getElementById('tAll').classList.toggle('on',mode==='all');
+  document.getElementById('tGrade').classList.toggle('on',mode==='grade');
+  var gt=document.getElementById('gradeTabs');
+  gt.classList.toggle('hidden',mode!=='grade');
+  if(mode==='grade' && !gt.innerHTML){
+    ['高0','高1','高2'].forEach(function(g,i){
+      var b=document.createElement('button'); b.textContent=g;
+      if(String(meGrade)===g||(!meGrade&&i===0)){b.className='on';rankGrade=g;}
+      b.onclick=function(){ document.querySelectorAll('#gradeTabs button').forEach(function(x){x.classList.remove('on');}); b.className='on'; rankGrade=g; loadRanking(); };
+      gt.appendChild(b);
+    });
+    if(!rankGrade) rankGrade=String(meGrade||'高0');
+  }
+  loadRanking();
+}
+function loadRanking(){
+  document.getElementById('rankList').innerHTML='<div class="hint">読み込み中… <span class="spin"></span></div>';
+  api('ranking',{mode:rankMode, grade:rankMode==='grade'?rankGrade:null}).then(function(res){
+    var out='';
+    res.ranking.forEach(function(r){
+      var g=r.rank<=3?'g'+r.rank:'';
+      out+='<div class="rank '+(r.id===me?'me':'')+'"><div class="pos '+g+'">'+r.rank+'</div>'
+        +'<div class="id">'+r.id+(r.id===me?' <span class="badge">あなた</span>':'')+'</div>'
+        +'<div class="pt">'+r.points+'<span> pt</span></div></div>';
+    });
+    document.getElementById('rankList').innerHTML=out||'<div class="hint">まだデータがありません</div>';
+    var d=new Date(res.generatedAt);
+    document.getElementById('rankMeta').textContent='更新: '+d.toLocaleString('ja-JP')+'（同点は同順位）';
+  }).catch(function(){ document.getElementById('rankList').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
 }
 </script>
 </body>
