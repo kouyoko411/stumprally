@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>QRスキャン｜スタンプラリー</title>
+<title>QRスキャン｜すずかぜスタンプラリー</title>
 <style>
   :root{
     --aqua-50:#f0fbff; --aqua-100:#e0f6ff; --aqua-200:#c2ecfb;
@@ -59,7 +59,7 @@
     <div><h1>QRスキャン</h1><div class="sub">名札のQRコードを読み取ろう</div></div>
   </div>
   <div class="content">
-
+ 
     <!-- 生徒番号が未取得のとき -->
     <section id="scNeedId" class="card hidden">
       <h2>🔑 生徒番号の確認</h2>
@@ -69,7 +69,7 @@
       <div class="err" id="sidErr"></div>
       <button class="btn" onclick="setSid()">次へ</button>
     </section>
-
+ 
     <!-- スキャン画面 -->
     <section id="scScan" class="hidden">
       <div class="card">
@@ -81,21 +81,21 @@
         <button class="btn ghost" id="backBtn" onclick="goApp()">アプリに戻る</button>
       </div>
     </section>
-
+ 
   </div>
 </div>
-
+ 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ====================================================================
  *  設定：デプロイ後にここを自分の値へ書き換える
  * ==================================================================== */
-var GAS_URL  = 'https://script.google.com/macros/s/AKfycbwxA0SMa4kK41IB8QXR4-HY7wH0Tr_-E_FYNFxjzbkiI61rKHSTpkSZDvgYfnYgg3ywew/exec'; // ← GASウェブアプリURL
+var GAS_URL  = 'https://script.google.com/macros/s/XXXXXXXXXXXXXXXXXXXXXXXX/exec'; // ← GASウェブアプリURL
 var APP_URL  = GAS_URL;   // 「アプリに戻る」の遷移先（生徒用GAS画面）
 /* ==================================================================== */
-
+ 
 var me=null, qr=null, scanning=false, lastScanAt=0, busy=false;
-
+ 
 /* ---- 生徒番号の取得：URLパラメータ ?sid= → localStorage の順 ---- */
 function getParam(k){ return new URLSearchParams(location.search).get(k); }
 window.addEventListener('load', function(){
@@ -117,7 +117,7 @@ function startFlow(){
   document.getElementById('scScan').classList.remove('hidden');
   startScan();
 }
-
+ 
 /* ---- カメラ起動＆QR読取 ---- */
 function startScan(){
   if(scanning) return;
@@ -137,26 +137,26 @@ function onScan(text){
   stopScan();
   askLessons(text.trim());
 }
-
-/* ---- 授業数入力 → GASへ送信 ---- */
-function askLessons(token){
+ 
+/* ---- 受講数入力 → GASへ送信（0〜10。0は自習等・1日1回まで） ---- */
+function askLessons(token, presetErr){
   var box=document.createElement('div'); box.className='modal';
   box.innerHTML='<div class="box"><div class="emoji">📸</div><h3>QRを読み取りました</h3>'
-    +'<div class="hint">今日その先生・スタッフの前で受けた授業数を入力してください（1〜10）</div>'
-    +'<input type="number" id="lessonInput" min="1" max="10" value="1" style="margin:14px 0">'
-    +'<div class="err" id="lessonErr"></div>'
+    +'<div class="hint">今日その先生・スタッフの前で受けた授業数を入力してください（0〜10）<br>0＝授業ではなく自習等（1日1回まで）</div>'
+    +'<input type="number" id="lessonInput" min="0" max="10" value="1" style="margin:14px 0">'
+    +'<div class="err" id="lessonErr">'+(presetErr||'')+'</div>'
     +'<button class="btn" id="lessonOk">スタンプを押す</button>'
     +'<button class="btn ghost" id="lessonCancel">キャンセル</button></div>';
   document.body.appendChild(box);
   document.getElementById('lessonCancel').onclick=function(){ box.remove(); startScan(); };
   document.getElementById('lessonOk').onclick=function(){
     var n=parseInt(document.getElementById('lessonInput').value,10);
-    if(isNaN(n)||n<1||n>10){ document.getElementById('lessonErr').textContent='1〜10で入力してください'; return; }
+    if(isNaN(n)||n<0||n>10){ document.getElementById('lessonErr').textContent='0〜10で入力してください'; return; }
     var b=document.getElementById('lessonOk'); b.disabled=true; b.innerHTML='送信中… <span class="spin"></span>';
     sendClaim(token, n, box);
   };
 }
-
+ 
 /* ---- CORS回避：text/plain の単純リクエストでPOST ---- */
 function sendClaim(token, lessons, box){
   busy=true;
@@ -167,19 +167,30 @@ function sendClaim(token, lessons, box){
   })
   .then(function(r){ return r.json(); })
   .then(function(r){
-    busy=false; box.remove();
-    if(!r.ok){ resultModal('⚠️','エラー', r.msg||'付与に失敗しました', null, null); return; }
+    busy=false;
+    if(!r.ok){
+      // 「0」申告1日1回オーバー等は、入力画面に戻して選び直させる
+      if(r.zeroLimit){ box.remove(); askLessons(token, r.msg); return; }
+      box.remove(); resultModal('⚠️','エラー', r.msg||'付与に失敗しました', null, null); return;
+    }
+    box.remove();
     if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); return; }
-    resultModal('✨','スタンプ獲得！','+'+r.added+' pt',
-      r.bonus ? '🎉 スタッフ '+r.staffCount+' 人達成ボーナス +'+r.bonus+'pt！' : null,
-      r.isNew ? 'はじめまして！' : 'ふたたび！');
+    var total = (r.attend||0) + (r.added||0) + (r.bonus||0);
+    var parts = [];
+    if(r.attend) parts.push('登校 +'+r.attend);
+    parts.push('受講 +'+r.added);
+    if(r.bonus) parts.push('ボーナス +'+r.bonus);
+    resultModal('✨','スタンプ獲得！','+'+total+' pt',
+      (r.attend? '🏫 登校ポイント +'+r.attend+(r.bonus? '　🎉 スタッフ '+r.staffCount+'人達成 +'+r.bonus:''):
+                 (r.bonus? '🎉 スタッフ '+r.staffCount+'人達成ボーナス +'+r.bonus+'pt！':null)),
+      parts.join('　/　'));
   })
   .catch(function(){
     busy=false; box.remove();
     resultModal('⚠️','通信エラー','電波状況を確認してもう一度お試しください', null, null);
   });
 }
-
+ 
 function resultModal(emoji,title,big,bonus,sub){
   var m=document.createElement('div'); m.className='modal';
   m.innerHTML='<div class="box"><div class="emoji">'+emoji+'</div><h3>'+title+'</h3><div class="big">'+big+'</div>'
@@ -190,7 +201,7 @@ function resultModal(emoji,title,big,bonus,sub){
   document.getElementById('rmOk').onclick=function(){ m.remove(); startScan(); };
   document.getElementById('rmBack').onclick=function(){ m.remove(); goApp(); };
 }
-
+ 
 /* ---- 生徒番号を付けてGASアプリへ戻る（ログイン状態の引き継ぎ） ---- */
 function goApp(){
   stopScan();
