@@ -96,10 +96,17 @@
   .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
   .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative}
   .scell.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .scell{cursor:pointer}
+  .scell:active{transform:scale(.95)}
   .scell .nm{font-size:14px;font-weight:800}
   .scell .ck{position:absolute;top:3px;right:5px;font-size:11px}
   .scell.got .ck{color:var(--aqua-500)}
   .complete{text-align:center;font-weight:800;color:var(--aqua-600);margin:4px 0 2px;font-size:15px}
+  .sbadge{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;border:2px solid var(--aqua-200);background:var(--aqua-50);color:var(--ink-soft)}
+  .sbadge.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .drow{display:flex;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--aqua-100);font-size:14px}
+  .drow .dl{color:var(--ink-soft);font-weight:700;flex-shrink:0}
+  .drow .dv{text-align:right;font-weight:600}
 </style>
 </head>
 <body>
@@ -301,7 +308,20 @@ function stopScan(){
 function onScan(text){
   var now=Date.now();
   if(busy || now-lastScanAt<2500) return;
-  lastScanAt=now; stopScan(); askLessons(text.trim());
+  lastScanAt=now; stopScan();
+  var t=text.trim();
+  // イベントQR（例：event:englishcamp）は授業数入力なしで直接付与
+  if(/^event:/i.test(t)){ claimEventScan(t.replace(/^event:/i,'')); return; }
+  askLessons(t);
+}
+function claimEventScan(eventId){
+  busy=true;
+  api('event',{studentId:me, event:eventId}).then(function(r){
+    busy=false;
+    if(!r.ok){ resultModal(r.alreadyEvent?'🔁':'⚠️', r.alreadyEvent?'受け取り済み':'エラー', r.msg||'付与に失敗しました', null, null); return; }
+    resultModal('🎪', (r.eventName||'イベント')+' 出席！', '+'+r.added+' pt', null, 'イベントポイントを獲得しました');
+    applySummary(r.summary);
+  }).catch(function(){ busy=false; resultModal('⚠️','通信エラー','もう一度お試しください',null,null); });
 }
 function askLessons(token, presetErr){
   var box=document.createElement('div'); box.className='modal';
@@ -399,13 +419,28 @@ function renderGrid(grid){
   }
   document.getElementById('gridWrap').innerHTML=html+'<div class="hint" style="margin-top:4px">通算受講コマ数：<b>'+grid.length+'</b></div>';
 }
+var staffCache=[];
 function renderStaff(h){
+  staffCache=h.staff||[];
   document.getElementById('completeMsg').textContent=(h.staffTotal||25)+'人中 '+h.collectedCount+'人 達成！';
   var html='';
-  (h.staff||[]).forEach(function(s){
-    html+='<div class="scell'+(s.collected?' got':'')+'"><span class="ck">'+(s.collected?'✓':'')+'</span><span class="nm">'+esc(s.name).slice(0,2)+'</span></div>';
+  staffCache.forEach(function(s,i){
+    html+='<div class="scell'+(s.collected?' got':'')+'" onclick="staffModal('+i+')"><span class="ck">'+(s.collected?'✓':'')+'</span><span class="nm">'+esc(s.name).slice(0,2)+'</span></div>';
   });
   document.getElementById('staffGrid').innerHTML=html;
+}
+function staffModal(i){
+  var s=staffCache[i]; if(!s) return;
+  function row(lbl,val){ return '<div class="drow"><span class="dl">'+lbl+'</span><span class="dv">'+(val?esc(val):'—')+'</span></div>'; }
+  var m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="box" style="text-align:left">'
+    +'<div style="text-align:center"><div class="sbadge '+(s.collected?'got':'')+'">'+esc(s.name).slice(0,2)+'</div>'
+    +'<h3 style="text-align:center;margin:10px 0 2px">'+(s.fullName?esc(s.fullName):esc(s.name))+'</h3>'
+    +'<div class="badge" style="margin-bottom:6px">'+(s.collected?'✓ 取得済み':'まだ会えていません')+'</div></div>'
+    +row('大学',s.university)+row('学部',s.faculty)+row('担当科目',s.subject)
+    +'<button class="btn" style="margin-top:16px" onclick="this.closest(\'.modal\').remove()">とじる</button></div>';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  document.body.appendChild(m);
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 
