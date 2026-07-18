@@ -94,19 +94,49 @@
   .gcell.on{border-style:solid;border-color:var(--aqua-400);background:#fff;color:var(--aqua-600)}
   .gtotal{width:30px;text-align:right;font-size:11px;font-weight:800;color:var(--aqua-600)}
   .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
-  .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative}
-  .scell.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
-  .scell{cursor:pointer}
+  .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative;overflow:hidden;cursor:pointer}
   .scell:active{transform:scale(.95)}
-  .scell .nm{font-size:14px;font-weight:800}
-  .scell .ck{position:absolute;top:3px;right:5px;font-size:11px}
-  .scell.got .ck{color:var(--aqua-500)}
+  .scell .nm{font-size:15px;font-weight:800}
+  /* 取得：色塗り＋緑の角リボン✓ */
+  .scell.got{background:linear-gradient(150deg,#d9f2ff,#fff);border-color:var(--aqua-400)}
+  .scell.got .nm{color:var(--aqua-700)}
+  .scell .ck{display:none}
+  .scell.got .ck{display:flex;position:absolute;top:-2px;right:-2px;width:22px;height:22px;background:#2fae72;color:#fff;border-bottom-left-radius:12px;align-items:center;justify-content:center;font-size:12px;padding:2px 0 3px 3px}
+  /* 未取得：グレー破線 */
+  .scell.no{background:#eef1f3;border:2px dashed #c3ccd2}
+  .scell.no .nm{color:#aab4bb;opacity:.7}
   .complete{text-align:center;font-weight:800;color:var(--aqua-600);margin:4px 0 2px;font-size:15px}
   .sbadge{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;border:2px solid var(--aqua-200);background:var(--aqua-50);color:var(--ink-soft)}
   .sbadge.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
   .drow{display:flex;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--aqua-100);font-size:14px}
   .drow .dl{color:var(--ink-soft);font-weight:700;flex-shrink:0}
   .drow .dv{text-align:right;font-weight:600}
+  /* 文理区分：左帯の色＋左上の文/理 */
+  .scell.bunkei,.scell.no.bunkei{border-left:6px solid #f0a94e}
+  .scell.rikei,.scell.no.rikei{border-left:6px solid #4aa8e0}
+  .scell.shain,.scell.no.shain{border-left:6px solid #8a7cd8}
+  .scell .kb{position:absolute;top:2px;left:4px;font-size:9px;font-weight:800}
+  .scell.bunkei .kb{color:#e08a2b}
+  .scell.rikei .kb{color:#2b8fd4}
+  .scell.shain .kb{color:#6a5bc4}
+  /* 本日配置：下部の西口/東口ピルのみ（強調なし） */
+  .scell.here{padding-bottom:6px}
+  .scell .loc{position:absolute;bottom:0;left:0;right:0;background:var(--aqua-600);color:#fff;font-size:9px;font-weight:800;text-align:center;line-height:1.6}
+  /* 会えるスタッフ（配置） */
+  .gate{margin-top:8px}
+  .gate .gh{font-weight:800;font-size:14px;color:var(--aqua-700);margin:8px 0 4px;display:flex;align-items:center;gap:6px}
+  .gate .gh .pin{background:var(--aqua-100);border-radius:8px;padding:1px 8px;font-size:12px}
+  .sperson{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--aqua-100)}
+  .sperson .av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--aqua-50);border:2px solid var(--aqua-200);color:var(--ink-soft);flex-shrink:0}
+  .sperson.got .av{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .sperson .pn{flex:1;font-size:14px;font-weight:600}
+  .sperson .kt{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px}
+  .kt.bunkei{background:#fde7d3;color:#c9761b}
+  .kt.rikei{background:#dceffb;color:#1f7fbe}
+  .kt.shain{background:#e7e3fa;color:#5a4bb0}
+  .kt{background:#eef1f3;color:#5f6d75}
+  .sperson .mk{font-size:12px;font-weight:800;color:var(--aqua-600)}
+  .sperson .mk.no{color:var(--ink-soft);opacity:.6}
 </style>
 </head>
 <body>
@@ -162,6 +192,16 @@
     <!-- スタンプ台紙 -->
     <section id="scDaishi" class="hidden">
       <div class="card">
+        <h2>📅 会えるスタッフ</h2>
+        <div class="daishi-head">
+          <button onclick="schedMove(-1)">‹</button>
+          <div class="mon" id="schDate">—</div>
+          <button onclick="schedMove(1)">›</button>
+        </div>
+        <div id="schedWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">その日いるスタッフを西口／東口に分けて表示。✓＝取得済み。まだの人に会いに行こう！</div>
+      </div>
+      <div class="card">
         <h2>📖 スタンプ台紙</h2>
         <div class="daishi-head">
           <button onclick="calMove(-1)">‹</button>
@@ -179,8 +219,13 @@
       <div class="card">
         <h2>🎯 スタッフ収集状況</h2>
         <div class="complete" id="completeMsg">—</div>
+        <div class="subtabs" id="kubunTabs">
+          <button class="on" onclick="kubunFilter('all',this)">全体</button>
+          <button onclick="kubunFilter('文系',this)">📘 文系</button>
+          <button onclick="kubunFilter('理系',this)">🔬 理系</button>
+        </div>
         <div class="staffgrid" id="staffGrid"></div>
-        <div class="hint">色付き＝取得済み。うすい枠＝まだ会えていないスタッフ。</div>
+        <div class="hint">緑✓＝取得済み／グレー破線＝未取得。左帯：<b style="color:#e08a2b">文系</b>／<b style="color:#2b8fd4">理系</b>。下の「西口/東口」は本日いる場所。タップで詳細。</div>
       </div>
     </section>
 
@@ -382,6 +427,9 @@ function loadDaishi(){
       calYear=d.getFullYear(); calMonth=d.getMonth();
     }
     renderCalendar(); renderGrid(h.grid); renderStaff(h);
+    schedDate = h.scheduleDate || todayStrLocal();
+    document.getElementById('schDate').textContent=schedLabel(schedDate);
+    renderSchedule(h.schedule||[]);
   }).catch(function(){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
 }
 function calMove(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
@@ -419,28 +467,91 @@ function renderGrid(grid){
   }
   document.getElementById('gridWrap').innerHTML=html+'<div class="hint" style="margin-top:4px">通算受講コマ数：<b>'+grid.length+'</b></div>';
 }
-var staffCache=[];
+var staffCache=[], kubunFilterVal='all';
+function kubunCls(k){ return k==='文系'?'bunkei':(k==='理系'?'rikei':(k==='社員'?'shain':'')); }
+function kbLetter(k){ return k==='文系'?'文':(k==='理系'?'理':(k==='社員'?'社':'')); }
+function kubunFilter(v,btn){
+  kubunFilterVal=v;
+  document.querySelectorAll('#kubunTabs button').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  drawStaffGrid();
+}
 function renderStaff(h){
   staffCache=h.staff||[];
   document.getElementById('completeMsg').textContent=(h.staffTotal||25)+'人中 '+h.collectedCount+'人 達成！';
+  drawStaffGrid();
+}
+function drawStaffGrid(){
   var html='';
   staffCache.forEach(function(s,i){
-    html+='<div class="scell'+(s.collected?' got':'')+'" onclick="staffModal('+i+')"><span class="ck">'+(s.collected?'✓':'')+'</span><span class="nm">'+esc(s.name).slice(0,2)+'</span></div>';
+    if(kubunFilterVal!=='all' && s.kubun!==kubunFilterVal) return;
+    var kc=kubunCls(s.kubun); var kl=kbLetter(s.kubun);
+    html+='<div class="scell'+(s.collected?' got':' no')+(kc?' '+kc:'')+(s.todayLoc?' here':'')+'" onclick="staffModal('+i+')">'
+      +(kl?'<span class="kb">'+kl+'</span>':'')
+      +(s.collected?'<span class="ck">✓</span>':'')
+      +'<span class="nm">'+esc(s.name).slice(0,2)+'</span>'
+      +(s.todayLoc?'<span class="loc">'+esc(s.todayLoc)+'</span>':'')
+      +'</div>';
   });
-  document.getElementById('staffGrid').innerHTML=html;
+  document.getElementById('staffGrid').innerHTML=html||'<div class="hint">該当するスタッフがいません</div>';
 }
 function staffModal(i){
   var s=staffCache[i]; if(!s) return;
-  function row(lbl,val){ return '<div class="drow"><span class="dl">'+lbl+'</span><span class="dv">'+(val?esc(val):'—')+'</span></div>'; }
+  function row(lbl,val){ return val ? '<div class="drow"><span class="dl">'+lbl+'</span><span class="dv">'+esc(val)+'</span></div>' : ''; }
+  var kubunBadge = s.kubun ? '<span class="kt '+kubunCls(s.kubun)+'" style="margin-left:6px">'+esc(s.kubun)+'</span>' : '';
+  var detail = row('区分',s.kubun)+row('大学',s.university)+row('学部',s.faculty)+row('担当科目',s.subject);
+  if(!detail) detail='<div class="drow"><span class="dl">プロフィール</span><span class="dv">情報は未登録です</span></div>';
   var m=document.createElement('div'); m.className='modal';
   m.innerHTML='<div class="box" style="text-align:left">'
-    +'<div style="text-align:center"><div class="sbadge '+(s.collected?'got':'')+'">'+esc(s.name).slice(0,2)+'</div>'
-    +'<h3 style="text-align:center;margin:10px 0 2px">'+(s.fullName?esc(s.fullName):esc(s.name))+'</h3>'
+    +'<div style="text-align:center"><div class="sbadge '+(s.collected?'got':'')+(kubunCls(s.kubun)?' '+kubunCls(s.kubun):'')+'">'+esc(s.name).slice(0,2)+'</div>'
+    +'<h3 style="text-align:center;margin:10px 0 2px">'+(s.fullName?esc(s.fullName):esc(s.name))+kubunBadge+'</h3>'
     +'<div class="badge" style="margin-bottom:6px">'+(s.collected?'✓ 取得済み':'まだ会えていません')+'</div></div>'
-    +row('大学',s.university)+row('学部',s.faculty)+row('担当科目',s.subject)
+    +detail
+    +row('本日の配置',s.todayLoc?s.todayLoc:'本日は不在')
     +'<button class="btn" style="margin-top:16px" onclick="this.closest(\'.modal\').remove()">とじる</button></div>';
   m.onclick=function(e){if(e.target===m)m.remove();};
   document.body.appendChild(m);
+}
+
+/* ---- 会えるスタッフ（配置・日付切替） ---- */
+var schedDate=null;
+function fmtDate(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function schedMove(delta){
+  var d=new Date(schedDate+'T00:00:00'); d.setDate(d.getDate()+delta); schedDate=fmtDate(d); loadSchedule();
+}
+function loadSchedule(){
+  document.getElementById('schDate').textContent=schedLabel(schedDate);
+  document.getElementById('schedWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  api('schedule',{studentId:me, date:schedDate}).then(function(r){
+    renderSchedule((r&&r.schedule)||[]);
+  }).catch(function(){ document.getElementById('schedWrap').innerHTML='<div class="err">読み込みに失敗しました</div>'; });
+}
+function schedLabel(ds){
+  var t=todayStrLocal();
+  return ds+(ds===t?'（今日）':'');
+}
+function todayStrLocal(){var t=new Date();return fmtDate(t);}
+function renderSchedule(list){
+  if(!list.length){ document.getElementById('schedWrap').innerHTML='<div class="hint" style="margin:0">この日に配置されたスタッフはいません。</div>'; return; }
+  var groups={};
+  list.forEach(function(s){ var g=s.location||'その他'; (groups[g]=groups[g]||[]).push(s); });
+  var order=Object.keys(groups).sort(function(a,b){ // 西口→東口→その他
+    var rank=function(x){return x==='西口'?0:x==='東口'?1:2;}; return rank(a)-rank(b);
+  });
+  var html='';
+  order.forEach(function(g){
+    html+='<div class="gate"><div class="gh"><span class="pin">📍 '+esc(g)+'</span></div>';
+    groups[g].forEach(function(s){
+      html+='<div class="sperson'+(s.collected?' got':'')+'">'
+        +'<div class="av">'+esc(s.name).slice(0,2)+'</div>'
+        +'<div class="pn">'+esc(s.name)+'</div>'
+        +(s.kubun?'<span class="kt '+kubunCls(s.kubun)+'">'+esc(s.kubun)+'</span>':'')
+        +'<div class="mk'+(s.collected?'':' no')+'">'+(s.collected?'✓ 取得済み':'未取得')+'</div>'
+        +'</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('schedWrap').innerHTML=html;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 
