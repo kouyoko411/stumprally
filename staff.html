@@ -63,6 +63,14 @@
       <div class="hint">※ その日最初の付与で登校ポイント+1。0（自習）は1日1回まで。付与履歴はスプレッドシートに記録されます。</div>
     </div>
     <div class="card">
+      <h2>🎪 English Camp 出席付与（+10）</h2>
+      <label>生徒番号（7〜8桁の数字）</label>
+      <input type="tel" id="evId" inputmode="numeric" placeholder="例：12345678" maxlength="8">
+      <div class="err" id="evErr"></div>
+      <button class="btn" id="evBtn" onclick="grantEvent()">English Camp を付与（+10pt）</button>
+      <div class="hint">※ 1人につき1回まで。2回目以降は「受け取り済み」になります。生徒がイベントQRを自分で読み取ってもOK。</div>
+    </div>
+    <div class="card">
       <h2>🧾 直近の付与</h2>
       <div id="stLog"><div class="hint" style="margin:0">まだ付与はありません。</div></div>
     </div>
@@ -100,6 +108,23 @@ function grant(){
     b.disabled=false; b.textContent='付与する'; e.textContent='通信エラー。もう一度お試しください。';
   });
 }
+function grantEvent(){
+  var id=document.getElementById('evId').value.trim();
+  var e=document.getElementById('evErr'); e.textContent='';
+  if(!/^[0-9]+$/.test(id)||id.length<7||id.length>8){e.textContent='生徒番号は7〜8桁の数字で入力してください';return;}
+  var b=document.getElementById('evBtn'); b.disabled=true; b.innerHTML='送信中… <span class="spin"></span>';
+  api('event',{studentId:id, event:'englishcamp'}).then(function(r){
+    b.disabled=false; b.textContent='English Camp を付与（+10pt）';
+    if(!r.ok){ e.textContent=r.msg; return; }
+    var t=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    log.unshift(t+'　生徒 '+id+' に '+(r.eventName||'イベント')+' +'+r.added+'pt');
+    document.getElementById('stLog').innerHTML=log.slice(0,10).map(function(l){return '<div class="row">'+l+'</div>';}).join('');
+    document.getElementById('evId').value='';
+    modal('🎪','付与しました','生徒 '+id+'<br>+'+r.added+' pt');
+  }).catch(function(){
+    b.disabled=false; b.textContent='English Camp を付与（+10pt）'; e.textContent='通信エラー。もう一度お試しください。';
+  });
+}
 function modal(emoji,title,big){
   var m=document.createElement('div'); m.className='modal';
   m.innerHTML='<div class="box"><div class="emoji">'+emoji+'</div><h3>'+title+'</h3><div class="big">'+big+'</div><button class="btn" style="margin-top:16px">OK</button></div>';
@@ -107,5 +132,7 @@ function modal(emoji,title,big){
   document.body.appendChild(m);
 }
 </script>
+</body>
+</html>
 </body>
 </html>
