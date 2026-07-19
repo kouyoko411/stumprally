@@ -215,7 +215,8 @@
         <h2>📸 QRコード読み取り</h2>
         <div id="reader"></div>
         <div class="err" id="scanErr"></div>
-        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。</div>
+        <button class="btn" id="scanStartBtn" onclick="startScan()">📷 カメラを起動する</button>
+        <div class="hint">上のボタンを押すとカメラが起動します。名札のQRコードをカメラに向けてください。<br>うまく出ないときはもう一度ボタンをタップ。<span style="opacity:.55">（読み取りモジュール v3）</span></div>
         <button class="btn ghost" onclick="go('scHome')">もどる</button>
       </div>
     </section>
@@ -394,7 +395,7 @@ function go(id){
   document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
   var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scStaff:'nStaff',scRank:'nRank',scRules:'nRules'};
   if(map[id]) document.getElementById(map[id]).classList.add('on');
-  if(id==='scScan') startScan(); else stopScan();
+  if(id!=='scScan') stopScan(); else prepScan();
   if(id==='scHome') refreshHome();
   if(id==='scDaishi') loadDaishi();
   if(id==='scStaff') loadStaff();
@@ -450,26 +451,34 @@ function ensureQrLib(cb){
     document.head.appendChild(s);
   })(0);
 }
+/* 読み取り画面を開いたときの初期表示（自動起動はしない＝iOS対策：ボタンの直接タップで起動） */
+function prepScan(){
+  var b=document.getElementById('scanStartBtn'); if(b){ b.style.display=''; b.disabled=false; b.textContent='📷 カメラを起動する'; }
+  var errEl=document.getElementById('scanErr'); if(errEl) errEl.textContent='';
+}
+function scanMsg(html){ var e=document.getElementById('scanErr'); if(e) e.innerHTML=html; }
 function startScan(){
   if(scanning) return;
-  var errEl=document.getElementById('scanErr'); errEl.textContent='';
-  if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    errEl.innerHTML='このページではカメラを使えません。配布された <b>https://…github.io/…</b> のURLをスマホのブラウザで開いてください（ファイルを直接開くと起動しません）。';
-    return;
-  }
+  scanMsg('');
+  if(!window.isSecureContext){ scanMsg('⚠ 安全な接続(https)ではありません。配布された github.io のURLから開いてください。'); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ scanMsg('⚠ このブラウザではカメラを使えません。LINEやClassroom等のアプリ内ブラウザの場合は「Safariで開く」を選んでください。'); return; }
+  var b=document.getElementById('scanStartBtn'); if(b){ b.disabled=true; b.textContent='起動中…'; }
   scanning=true;
-  errEl.innerHTML='カメラを準備中… <span class="spin"></span>';
+  scanMsg('カメラを準備中… <span class="spin"></span>');
   ensureQrLib(function(ok){
-    if(!ok){ scanning=false; errEl.textContent='読み取り機能の読み込みに失敗しました。通信環境を確認し、ページを再読み込みしてください。'; return; }
-    errEl.textContent='';
+    if(!ok){ scanning=false; if(b){b.disabled=false;b.textContent='📷 もう一度試す';} scanMsg('⚠ 読み取り機能を読み込めませんでした。通信環境を確認して再読み込みしてください。'); return; }
     try{ qr=new Html5Qrcode("reader"); }
-    catch(e){ scanning=false; errEl.textContent='読み取りの初期化に失敗しました。ページを再読み込みしてください。'; return; }
+    catch(e){ scanning=false; if(b){b.disabled=false;b.textContent='📷 もう一度試す';} scanMsg('⚠ 初期化エラー：'+(e&&e.message||e)); return; }
     var cfg={fps:10,qrbox:{width:220,height:220}};
-    qr.start({facingMode:"environment"},cfg,onScan,function(){}).catch(function(e1){
-      // 背面カメラで失敗したら前面カメラで再試行
-      qr.start({facingMode:"user"},cfg,onScan,function(){}).catch(function(e2){
-        scanning=false;
-        errEl.textContent='カメラを起動できませんでした。ブラウザのカメラ使用を「許可」にしてください。('+((e2&&e2.name)||(e1&&e1.name)||'')+')';
+    function ok0(){ scanMsg(''); if(b) b.style.display='none'; }
+    qr.start({facingMode:"environment"},cfg,onScan,function(){}).then(ok0).catch(function(e1){
+      qr.start({facingMode:"user"},cfg,onScan,function(){}).then(ok0).catch(function(e2){
+        scanning=false; if(b){b.disabled=false;b.textContent='📷 もう一度試す';}
+        var nm=(e2&&e2.name)||(e1&&e1.name)||'';
+        var extra = nm==='NotAllowedError' ? '　→ 設定＞Safari＞カメラ で「許可」にしてください。'
+                  : nm==='NotFoundError'||nm==='OverconstrainedError' ? '　→ 使えるカメラが見つかりません。'
+                  : nm==='NotReadableError' ? '　→ 他のアプリがカメラを使用中かもしれません。' : '';
+        scanMsg('⚠ カメラを起動できませんでした（'+nm+'）'+extra);
       });
     });
   });
