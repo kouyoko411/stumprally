@@ -137,6 +137,19 @@
   .kt{background:#eef1f3;color:#5f6d75}
   .sperson .mk{font-size:12px;font-weight:800;color:var(--aqua-600)}
   .sperson .mk.no{color:var(--ink-soft);opacity:.6}
+  /* ルール・使い方 */
+  .rule-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--aqua-100)}
+  .rule-item:last-child{border-bottom:none}
+  .rule-item .ic{font-size:22px;flex-shrink:0;width:34px;text-align:center}
+  .rule-item .txt b{display:block;font-size:14px;margin-bottom:2px}
+  .rule-item .txt span{font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .overlay{position:fixed;inset:0;background:rgba(9,40,52,.5);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+  .sheet{background:#fff;width:100%;max-width:440px;border-radius:24px 24px 0 0;padding:26px 22px 22px;max-height:85vh;overflow-y:auto;animation:up .3s cubic-bezier(.2,1,.4,1)}
+  @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .sheet-head{text-align:center;margin-bottom:16px}
+  .sheet-head .emoji{font-size:40px}
+  .sheet-head h3{margin:6px 0 2px;font-size:19px}
+  .sheet-head p{margin:0;font-size:12.5px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -192,16 +205,6 @@
     <!-- スタンプ台紙 -->
     <section id="scDaishi" class="hidden">
       <div class="card">
-        <h2>📅 会えるスタッフ</h2>
-        <div class="daishi-head">
-          <button onclick="schedMove(-1)">‹</button>
-          <div class="mon" id="schDate">—</div>
-          <button onclick="schedMove(1)">›</button>
-        </div>
-        <div id="schedWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
-        <div class="hint">その日いるスタッフを西口／東口に分けて表示。✓＝取得済み。まだの人に会いに行こう！</div>
-      </div>
-      <div class="card">
         <h2>📖 スタンプ台紙</h2>
         <div class="daishi-head">
           <button onclick="calMove(-1)">‹</button>
@@ -227,6 +230,16 @@
         <div class="staffgrid" id="staffGrid"></div>
         <div class="hint">緑✓＝取得済み／グレー破線＝未取得。左帯：<b style="color:#e08a2b">文系</b>／<b style="color:#2b8fd4">理系</b>。下の「西口/東口」は本日いる場所。タップで詳細。</div>
       </div>
+      <div class="card">
+        <h2>📅 会えるスタッフ</h2>
+        <div class="daishi-head">
+          <button onclick="schedMove(-1)">‹</button>
+          <div class="mon" id="schDate">—</div>
+          <button onclick="schedMove(1)">›</button>
+        </div>
+        <div id="schedWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">その日いるスタッフを西口／東口に分けて表示。✓＝取得済み。まだの人に会いに行こう！</div>
+      </div>
     </section>
 
     <!-- ランキング -->
@@ -242,6 +255,21 @@
         <div class="hint" id="rankMeta"></div>
       </div>
     </section>
+
+    <!-- ルール・使い方 -->
+    <section id="scRules" class="hidden">
+      <div class="card">
+        <h2>📖 ルール・使い方</h2>
+        <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRコードを読み取ると、自動で+1ポイントがもらえます（スタッフは誰でもOK）。</span></div></div>
+        <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>スタッフの名札のQRコードを読み取り、その先生・スタッフの前で受けた授業数（0〜10）を入力すると、その数だけポイントがもらえます。</span></div></div>
+        <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>自習の日（0コマ）について</b><span>授業を受けていない日は「0」を選べます。ただし「0」にできるのは1日1回までです。</span></div></div>
+        <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナスポイント</b><span>これまでに交流した「違うスタッフの人数」が5人ごとに、+3ポイントのボーナスがもらえます。</span></div></div>
+        <div class="rule-item"><div class="ic">📖</div><div class="txt"><b>スタンプ台紙の見方</b><span>カレンダーには「いつ誰と交流したか」、升目には「これまでの受講スタンプ」、収集状況には「会ったスタッフ」が記録されます。</span></div></div>
+        <div class="rule-item"><div class="ic">📅</div><div class="txt"><b>会えるスタッフ</b><span>台紙の下の方で、その日いるスタッフを西口／東口に分けて確認できます。まだ会っていない人に会いに行こう。</span></div></div>
+        <div class="rule-item"><div class="ic">🏆</div><div class="txt"><b>ランキング</b><span>全体・学年別（高0／高1／高2）をいつでも確認できます。同じポイントの人は同じ順位です。</span></div></div>
+        <button class="btn ghost" style="margin-top:14px" onclick="showWelcome()">▶ ようこそ画面をもう一度見る</button>
+      </div>
+    </section>
   </div>
 
   <div class="nav hidden" id="nav">
@@ -249,7 +277,20 @@
     <button id="nScan" onclick="go('scScan')"><span class="ic">📸</span>読み取り</button>
     <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
     <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
-    <button onclick="logout()"><span class="ic">🚪</span>ログアウト</button>
+    <button id="nRules" onclick="go('scRules')"><span class="ic">📘</span>ルール</button>
+    <button onclick="confirmLogout()"><span class="ic">🚪</span>ログアウト</button>
+  </div>
+</div>
+
+<!-- 初回ログイン時のようこそシート -->
+<div class="overlay hidden" id="welcome">
+  <div class="sheet">
+    <div class="sheet-head"><div class="emoji">❄️</div><h3>ようこそ！</h3><p>はじめに、スタンプの集め方とルールを確認しましょう</p></div>
+    <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRを読み取ると、自動で+1ポイント。</span></div></div>
+    <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>QRを読み取り、受けた授業数（0〜10）を入力するとポイント獲得。</span></div></div>
+    <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>0コマ申告は1日1回まで</b><span>自習の日は「0」を選べますが、1日1回だけです。</span></div></div>
+    <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナス</b><span>違うスタッフ5人ごとに+3ポイント。</span></div></div>
+    <button class="btn" style="margin-top:16px" onclick="hideWelcome()">わかった！はじめる</button>
   </div>
 </div>
 
@@ -304,27 +345,47 @@ function enterApp(summary){
   document.getElementById('meId').textContent=me;
   if(summary) applySummary(summary);
   go('scHome');
+  maybeShowWelcome();
 }
 function logout(){
   stopScan(); clearSession(); me=null;
+  document.getElementById('welcome').classList.add('hidden');
   document.getElementById('nav').classList.add('hidden');
   document.getElementById('meBox').classList.add('hidden');
-  ['scHome','scScan','scDaishi','scRank'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  ['scHome','scScan','scDaishi','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('scLogin').classList.remove('hidden');
   document.getElementById('loginId').value='';
 }
 
 /* ---- 画面遷移 ---- */
 function go(id){
-  ['scHome','scScan','scDaishi','scRank'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  ['scHome','scScan','scDaishi','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
-  var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scRank:'nRank'};
+  var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scRank:'nRank',scRules:'nRules'};
   if(map[id]) document.getElementById(map[id]).classList.add('on');
   if(id==='scScan') startScan(); else stopScan();
   if(id==='scHome') refreshHome();
   if(id==='scDaishi') loadDaishi();
   if(id==='scRank') loadRanking();
+}
+
+/* ---- ルール：ようこそシート＆初回自動表示 ---- */
+function showWelcome(){ document.getElementById('welcome').classList.remove('hidden'); }
+function hideWelcome(){ document.getElementById('welcome').classList.add('hidden'); try{localStorage.setItem('sr_rules_seen','1');}catch(e){} }
+function maybeShowWelcome(){ try{ if(!localStorage.getItem('sr_rules_seen')) showWelcome(); }catch(e){} }
+
+/* ---- ログアウト確認 ---- */
+function confirmLogout(){
+  var m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="box"><div class="emoji">🚪</div><h3>ログアウトしますか？</h3>'
+    +'<div class="hint" style="margin:8px 0 2px">次回は生徒番号の入力が必要です。</div>'
+    +'<button class="btn" id="loOk">ログアウトする</button>'
+    +'<button class="btn ghost" id="loCancel">キャンセル</button></div>';
+  document.body.appendChild(m);
+  document.getElementById('loOk').onclick=function(){ m.remove(); logout(); };
+  document.getElementById('loCancel').onclick=function(){ m.remove(); };
+  m.onclick=function(e){ if(e.target===m) m.remove(); };
 }
 
 /* ---- ホーム ---- */
