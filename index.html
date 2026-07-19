@@ -433,11 +433,25 @@ function applySummary(s){
 /* ---- QRスキャン（カメラ） ---- */
 function startScan(){
   if(scanning) return;
-  document.getElementById('scanErr').textContent='';
-  qr=new Html5Qrcode("reader");
+  var errEl=document.getElementById('scanErr'); errEl.textContent='';
+  if(!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    errEl.innerHTML='このページではカメラを使えません。配布された <b>https://…github.io/…</b> のURLをスマホのブラウザで開いてください（ファイルを直接開くと起動しません）。';
+    return;
+  }
+  if(typeof Html5Qrcode==='undefined'){
+    errEl.textContent='読み取り機能の読み込みに失敗しました。通信環境を確認し、ページを再読み込みしてください。';
+    return;
+  }
   scanning=true;
-  qr.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}},onScan,function(){})
-    .catch(function(){ scanning=false; document.getElementById('scanErr').textContent='カメラを起動できませんでした。ブラウザのカメラ権限を許可してください。'; });
+  qr=new Html5Qrcode("reader");
+  var cfg={fps:10,qrbox:{width:220,height:220}};
+  qr.start({facingMode:"environment"},cfg,onScan,function(){}).catch(function(e1){
+    // 背面カメラで失敗したら前面カメラで再試行
+    qr.start({facingMode:"user"},cfg,onScan,function(){}).catch(function(e2){
+      scanning=false;
+      errEl.textContent='カメラを起動できませんでした。ブラウザのカメラ使用を「許可」にしてください。('+((e2&&e2.name)||(e1&&e1.name)||'')+')';
+    });
+  });
 }
 function stopScan(){
   if(qr && scanning){ scanning=false; qr.stop().then(function(){qr.clear();}).catch(function(){}); }
