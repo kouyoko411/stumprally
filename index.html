@@ -314,7 +314,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ====================================================================
  *  設定：デプロイ後にここを自分の値へ書き換える
@@ -431,6 +431,15 @@ function applySummary(s){
 }
 
 /* ---- QRスキャン（カメラ） ---- */
+/* QRライブラリを確実に用意する（jsdelivrが失敗したらunpkgへフォールバック） */
+function ensureQrLib(cb){
+  if(typeof Html5Qrcode!=='undefined'){ cb(true); return; }
+  var s=document.createElement('script');
+  s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+  s.onload=function(){ cb(typeof Html5Qrcode!=='undefined'); };
+  s.onerror=function(){ cb(false); };
+  document.head.appendChild(s);
+}
 function startScan(){
   if(scanning) return;
   var errEl=document.getElementById('scanErr'); errEl.textContent='';
@@ -438,18 +447,20 @@ function startScan(){
     errEl.innerHTML='このページではカメラを使えません。配布された <b>https://…github.io/…</b> のURLをスマホのブラウザで開いてください（ファイルを直接開くと起動しません）。';
     return;
   }
-  if(typeof Html5Qrcode==='undefined'){
-    errEl.textContent='読み取り機能の読み込みに失敗しました。通信環境を確認し、ページを再読み込みしてください。';
-    return;
-  }
   scanning=true;
-  qr=new Html5Qrcode("reader");
-  var cfg={fps:10,qrbox:{width:220,height:220}};
-  qr.start({facingMode:"environment"},cfg,onScan,function(){}).catch(function(e1){
-    // 背面カメラで失敗したら前面カメラで再試行
-    qr.start({facingMode:"user"},cfg,onScan,function(){}).catch(function(e2){
-      scanning=false;
-      errEl.textContent='カメラを起動できませんでした。ブラウザのカメラ使用を「許可」にしてください。('+((e2&&e2.name)||(e1&&e1.name)||'')+')';
+  errEl.innerHTML='カメラを準備中… <span class="spin"></span>';
+  ensureQrLib(function(ok){
+    if(!ok){ scanning=false; errEl.textContent='読み取り機能の読み込みに失敗しました。通信環境を確認し、ページを再読み込みしてください。'; return; }
+    errEl.textContent='';
+    try{ qr=new Html5Qrcode("reader"); }
+    catch(e){ scanning=false; errEl.textContent='読み取りの初期化に失敗しました。ページを再読み込みしてください。'; return; }
+    var cfg={fps:10,qrbox:{width:220,height:220}};
+    qr.start({facingMode:"environment"},cfg,onScan,function(){}).catch(function(e1){
+      // 背面カメラで失敗したら前面カメラで再試行
+      qr.start({facingMode:"user"},cfg,onScan,function(){}).catch(function(e2){
+        scanning=false;
+        errEl.textContent='カメラを起動できませんでした。ブラウザのカメラ使用を「許可」にしてください。('+((e2&&e2.name)||(e1&&e1.name)||'')+')';
+      });
     });
   });
 }
