@@ -215,8 +215,7 @@
         <h2>📸 QRコード読み取り</h2>
         <div id="reader"></div>
         <div class="err" id="scanErr"></div>
-        <button class="btn" id="scanStartBtn" onclick="startScan()">📷 カメラを起動する</button>
-        <div class="hint">名札のQRコードをカメラに向けてください。カメラが出ないときは上のボタンをタップ。<span style="opacity:.55">（読み取りモジュール v4）</span></div>
+        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。<span style="opacity:.5">（v5）</span></div>
         <button class="btn ghost" onclick="go('scHome')">もどる</button>
       </div>
     </section>
@@ -395,7 +394,7 @@ function go(id){
   document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
   var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scStaff:'nStaff',scRank:'nRank',scRules:'nRules'};
   if(map[id]) document.getElementById(map[id]).classList.add('on');
-  if(id!=='scScan') stopScan(); else prepScan();
+  if(id==='scScan') startScan(); else stopScan();
   if(id==='scHome') refreshHome();
   if(id==='scDaishi') loadDaishi();
   if(id==='scStaff') loadStaff();
@@ -432,73 +431,30 @@ function applySummary(s){
 }
 
 /* ---- QRスキャン（カメラ） ---- */
-/* QRライブラリを確実に用意する。
- * 同梱ファイル(html5-qrcode.min.js)を最優先。読めない環境用にCDNも順に試す。 */
-function ensureQrLib(cb){
-  if(typeof Html5Qrcode!=='undefined'){ cb(true); return; }
-  var srcs=[
-    'html5-qrcode.min.js',
-    'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
-    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
-  ];
-  (function tryNext(i){
-    if(typeof Html5Qrcode!=='undefined'){ cb(true); return; }
-    if(i>=srcs.length){ cb(false); return; }
-    var s=document.createElement('script');
-    s.src=srcs[i];
-    s.onload=function(){ (typeof Html5Qrcode!=='undefined') ? cb(true) : tryNext(i+1); };
-    s.onerror=function(){ tryNext(i+1); };
-    document.head.appendChild(s);
-  })(0);
-}
-/* インスタンスは1つだけ使い回す。stopChain=直前の停止完了を待つためのPromise */
-var stopChain=Promise.resolve();
-function setBtn(text, disabled, show){
-  var b=document.getElementById('scanStartBtn'); if(!b) return;
-  if(text!=null) b.textContent=text;
-  b.disabled=!!disabled;
-  b.style.display=(show===false)?'none':'';
-}
-function prepScan(){
-  setBtn('📷 カメラを起動する', false, true);
-  scanMsg('');
-  startScan(); // 画面を開いたら自動で起動を試みる（タップ操作の中なので許可プロンプトが出る）
-}
-function scanMsg(html){ var e=document.getElementById('scanErr'); if(e) e.innerHTML=html; }
+/* ===== QR読み取り（元の同期的な形。ライブラリは同梱ファイルから読込済み） =====
+ * getUserMedia は必ず「画面遷移＝タップ操作」の同期の流れの中で呼ぶ。
+ * 非同期(Promise/コールバック)で包むと iOS Safari が許可プロンプトを出さないため。*/
 function startScan(){
   if(scanning) return;
-  scanMsg('');
-  if(!window.isSecureContext){ scanMsg('⚠ 安全な接続(https)ではありません。配布された github.io のURLから開いてください。'); setBtn('📷 カメラを起動する',false,true); return; }
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ scanMsg('⚠ このブラウザではカメラを使えません。LINEやClassroom等のアプリ内ブラウザの場合は「Safariで開く」を選んでください。'); setBtn('📷 カメラを起動する',false,true); return; }
+  var errEl=document.getElementById('scanErr'); errEl.textContent='';
+  if(typeof Html5Qrcode==='undefined'){
+    errEl.textContent='読み取り機能を読み込めませんでした。ページを再読み込みしてください。';
+    return;
+  }
+  try{ qr=new Html5Qrcode("reader"); }
+  catch(e){ errEl.textContent='読み取りの初期化に失敗しました。ページを再読み込みしてください。'; return; }
   scanning=true;
-  setBtn('起動中…', true, true);
-  scanMsg('カメラを準備中… <span class="spin"></span>');
-  ensureQrLib(function(ok){
-    if(!ok){ scanning=false; setBtn('📷 もう一度試す',false,true); scanMsg('⚠ 読み取り機能を読み込めませんでした。通信環境を確認して再読み込みしてください。'); return; }
-    // 直前の停止が終わってから起動（2回目以降が起動しない問題の対策）
-    stopChain.then(function(){
-      try{ if(!qr) qr=new Html5Qrcode("reader"); }
-      catch(e){ scanning=false; setBtn('📷 もう一度試す',false,true); scanMsg('⚠ 初期化エラー：'+(e&&e.message||e)); return; }
-      var cfg={fps:10,qrbox:{width:220,height:220}};
-      function ok0(){ scanMsg(''); setBtn(null,true,false); }
-      qr.start({facingMode:"environment"},cfg,onScan,function(){}).then(ok0).catch(function(e1){
-        qr.start({facingMode:"user"},cfg,onScan,function(){}).then(ok0).catch(function(e2){
-          scanning=false; setBtn('📷 もう一度試す',false,true);
-          var nm=(e2&&e2.name)||(e1&&e1.name)||'';
-          var extra = nm==='NotAllowedError' ? '　→ 設定＞Safari＞カメラ で「許可」にしてください。'
-                    : nm==='NotFoundError'||nm==='OverconstrainedError' ? '　→ 使えるカメラが見つかりません。'
-                    : nm==='NotReadableError' ? '　→ 他のアプリがカメラを使用中かもしれません。' : '';
-          scanMsg('⚠ カメラを起動できませんでした（'+nm+'）'+extra);
-        });
-      });
+  qr.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}},onScan,function(){})
+    .catch(function(err){
+      scanning=false;
+      var nm=(err&&err.name)||'';
+      var extra = nm==='NotAllowedError' ? '　→ 設定＞Safari＞カメラ で「許可」にしてください。'
+                : nm==='NotReadableError' ? '　→ 他のアプリがカメラを使用中かもしれません。' : '';
+      errEl.textContent='カメラを起動できませんでした（'+nm+'）。ブラウザのカメラ使用を「許可」にしてください。'+extra;
     });
-  });
 }
 function stopScan(){
-  if(qr && scanning){
-    scanning=false;
-    stopChain = qr.stop().catch(function(){}); // インスタンスは破棄せず使い回す（clearしない）
-  }
+  if(qr && scanning){ scanning=false; qr.stop().then(function(){ try{qr.clear();}catch(e){} }).catch(function(){}); }
 }
 function onScan(text){
   var now=Date.now();
