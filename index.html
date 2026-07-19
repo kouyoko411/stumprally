@@ -61,8 +61,8 @@
   .rank .pt{font-weight:800;color:var(--aqua-600);font-size:15px}
   .rank .pt span{font-size:11px;color:var(--ink-soft);font-weight:600}
   .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);display:flex;border-top:1px solid var(--aqua-100);z-index:8}
-  .nav button{flex:1;border:none;background:none;padding:9px 0 12px;font-size:10.5px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
-  .nav button .ic{font-size:20px}
+  .nav button{flex:1;border:none;background:none;padding:8px 0 11px;font-size:9.5px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:-.02em}
+  .nav button .ic{font-size:19px}
   .nav button.on{color:var(--aqua-600)}
   .hidden{display:none!important}
   .badge{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--aqua-100);color:var(--aqua-700);font-size:12px;font-weight:700}
@@ -219,6 +219,10 @@
         <div class="gridwrap" id="gridWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
         <div class="hint">受講1コマにつき1マス、申告のたびに左上から順に押されます。</div>
       </div>
+    </section>
+
+    <!-- スタッフ -->
+    <section id="scStaff" class="hidden">
       <div class="card">
         <h2>🎯 スタッフ収集状況</h2>
         <div class="complete" id="completeMsg">—</div>
@@ -227,7 +231,7 @@
           <button onclick="kubunFilter('文系',this)">📘 文系</button>
           <button onclick="kubunFilter('理系',this)">🔬 理系</button>
         </div>
-        <div class="staffgrid" id="staffGrid"></div>
+        <div class="staffgrid" id="staffGrid"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
         <div class="hint">緑✓＝取得済み／グレー破線＝未取得。左帯：<b style="color:#e08a2b">文系</b>／<b style="color:#2b8fd4">理系</b>。下の「西口/東口」は本日いる場所。タップで詳細。</div>
       </div>
       <div class="card">
@@ -276,6 +280,7 @@
     <button id="nHome" class="on" onclick="go('scHome')"><span class="ic">🏠</span>ホーム</button>
     <button id="nScan" onclick="go('scScan')"><span class="ic">📸</span>読み取り</button>
     <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
+    <button id="nStaff" onclick="go('scStaff')"><span class="ic">👥</span>スタッフ</button>
     <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
     <button id="nRules" onclick="go('scRules')"><span class="ic">📘</span>ルール</button>
     <button onclick="confirmLogout()"><span class="ic">🚪</span>ログアウト</button>
@@ -352,21 +357,22 @@ function logout(){
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('nav').classList.add('hidden');
   document.getElementById('meBox').classList.add('hidden');
-  ['scHome','scScan','scDaishi','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('scLogin').classList.remove('hidden');
   document.getElementById('loginId').value='';
 }
 
 /* ---- 画面遷移 ---- */
 function go(id){
-  ['scHome','scScan','scDaishi','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
-  var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scRank:'nRank',scRules:'nRules'};
+  var map={scHome:'nHome',scScan:'nScan',scDaishi:'nDaishi',scStaff:'nStaff',scRank:'nRank',scRules:'nRules'};
   if(map[id]) document.getElementById(map[id]).classList.add('on');
   if(id==='scScan') startScan(); else stopScan();
   if(id==='scHome') refreshHome();
   if(id==='scDaishi') loadDaishi();
+  if(id==='scStaff') loadStaff();
   if(id==='scRank') loadRanking();
 }
 
@@ -478,7 +484,7 @@ function resultModal(emoji,title,big,bonus,sub){
 var histData=null, calYear=null, calMonth=null;
 function loadDaishi(){
   document.getElementById('gridWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
-  document.getElementById('calGrid').innerHTML=''; document.getElementById('staffGrid').innerHTML='';
+  document.getElementById('calGrid').innerHTML='';
   api('history',{studentId:me}).then(function(h){
     if(!h||!h.ok){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました</div>'; return; }
     histData=h;
@@ -487,11 +493,20 @@ function loadDaishi(){
       var d=last?new Date(last+'T00:00:00'):new Date();
       calYear=d.getFullYear(); calMonth=d.getMonth();
     }
-    renderCalendar(); renderGrid(h.grid); renderStaff(h);
+    renderCalendar(); renderGrid(h.grid);
+  }).catch(function(){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+}
+/* ---- スタッフ（収集状況＋会えるスタッフ） ---- */
+function loadStaff(){
+  document.getElementById('staffGrid').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  api('history',{studentId:me}).then(function(h){
+    if(!h||!h.ok){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました</div>'; return; }
+    histData=h;
+    renderStaff(h);
     schedDate = h.scheduleDate || todayStrLocal();
     document.getElementById('schDate').textContent=schedLabel(schedDate);
     renderSchedule(h.schedule||[]);
-  }).catch(function(){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+  }).catch(function(){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
 }
 function calMove(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
 function pad2(n){return (n<10?'0':'')+n;}
