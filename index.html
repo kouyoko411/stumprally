@@ -645,8 +645,8 @@ function renderSchedule(list){
   if(!list.length){ document.getElementById('schedWrap').innerHTML='<div class="hint" style="margin:0">この日に配置されたスタッフはいません。</div>'; return; }
   var groups={};
   list.forEach(function(s){ var g=s.location||'その他'; (groups[g]=groups[g]||[]).push(s); });
-  var order=Object.keys(groups).sort(function(a,b){ // 西口→東口→その他
-    var rank=function(x){return x==='西口'?0:x==='東口'?1:2;}; return rank(a)-rank(b);
+  var order=Object.keys(groups).sort(function(a,b){ // 東口→西口→その他
+    var rank=function(x){return x==='東口'?0:x==='西口'?1:2;}; return rank(a)-rank(b);
   });
   var html='';
   order.forEach(function(g){
