@@ -43,22 +43,26 @@
   .modal .big{font-size:40px;font-weight:800;color:var(--aqua-600);margin:6px 0}
   .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--aqua-200);border-top-color:var(--aqua-500);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle}
   @keyframes sp{to{transform:rotate(360deg)}}
-  select{width:100%;padding:12px;border:2px solid var(--aqua-200);border-radius:12px;font-size:16px;background:var(--aqua-50);color:var(--ink)}
-  .locpick{display:flex;gap:8px;margin:10px 0}
-  .locpick button{flex:1;padding:12px;border:2px solid var(--aqua-200);background:#fff;border-radius:12px;font-size:15px;font-weight:800;color:var(--aqua-700)}
-  .locpick button.on{background:var(--aqua-500);color:#fff;border-color:var(--aqua-500)}
   .calhead{display:flex;align-items:center;justify-content:space-between;margin:6px 0 8px}
   .calhead button{border:2px solid var(--aqua-200);background:#fff;color:var(--aqua-600);border-radius:10px;width:38px;height:38px;font-size:18px;font-weight:800}
   .calhead .mon{font-weight:800;font-size:16px}
-  .cal2{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;touch-action:none;-webkit-user-select:none;user-select:none}
+  .cal2{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
   .cal2 .dow{text-align:center;font-size:11px;color:var(--ink-soft);font-weight:700}
   .cal2 .cell{aspect-ratio:1;border:2px solid var(--aqua-100);border-radius:10px;background:#fff;position:relative;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer}
   .cal2 .cell.empty{border:none;background:transparent;cursor:default}
-  .cal2 .cell.on{background:linear-gradient(150deg,#d9f2ff,#fff);border-color:var(--aqua-500);color:var(--aqua-700)}
-  .cal2 .cell .lo{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:#fff;background:var(--aqua-600);line-height:1.5;border-bottom-left-radius:8px;border-bottom-right-radius:8px}
-  .cal2 .cell .cnt{position:absolute;top:1px;right:3px;font-size:8px;font-weight:800;color:var(--ink-soft)}
-  .cal2 .cell.today2{box-shadow:0 0 0 2px var(--aqua-300) inset}
+  .cal2 .cell.has{background:linear-gradient(150deg,#eaf7ff,#fff);border-color:var(--aqua-300)}
+  .cal2 .cell.sel{border-color:var(--aqua-500);box-shadow:0 0 0 2px var(--aqua-400)}
+  .cal2 .cell .cnt{position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:9px;font-weight:800;color:#fff;background:var(--aqua-600);line-height:1.5;border-bottom-left-radius:8px;border-bottom-right-radius:8px}
+  .cal2 .cell.today2{outline:2px dashed var(--aqua-300);outline-offset:-4px}
+  .rosterhead{font-weight:800;font-size:15px;color:var(--aqua-700);margin:14px 0 8px}
+  .rrow{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--aqua-100)}
+  .rrow .rname{flex:1;font-size:14px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rseg{display:flex;gap:6px;flex-shrink:0}
+  .rseg button{width:42px;padding:8px 0;border:2px solid var(--aqua-200);background:#fff;border-radius:10px;font-size:13px;font-weight:800;color:var(--aqua-700)}
+  .rseg button.w.on{background:#f0a94e;border-color:#f0a94e;color:#fff}
+  .rseg button.e.on{background:var(--aqua-500);border-color:var(--aqua-500);color:#fff}
   .savemsg{font-size:12px;font-weight:700;color:var(--aqua-600);min-height:16px;margin-top:8px}
+  .dirty{color:#c9761b}
 </style>
 </head>
 <body>
@@ -87,21 +91,19 @@
       <div class="hint">※ 1人につき1回まで。2回目以降は「受け取り済み」になります。生徒がイベントQRを自分で読み取ってもOK。</div>
     </div>
     <div class="card">
-      <h2>📅 配置カレンダー入力</h2>
-      <label>スタッフを選ぶ</label>
-      <select id="calStaff" onchange="onStaffChange()"><option>読み込み中…</option></select>
-      <div class="locpick">
-        <button id="locWest" class="on" onclick="pickLoc('西口')">西口</button>
-        <button id="locEast" onclick="pickLoc('東口')">東口</button>
-      </div>
+      <h2>📅 配置を決める</h2>
       <div class="calhead">
         <button onclick="calStep(-1)">‹</button>
         <div class="mon" id="calMon2">—</div>
         <button onclick="calStep(1)">›</button>
       </div>
       <div class="cal2" id="cal2"></div>
+      <div class="hint" style="margin-top:6px">日付をタップして選択。数字はその日の配置人数です。</div>
+      <div class="rosterhead" id="rosterHead">↑ 日付を選んでください</div>
+      <div id="rosterList"></div>
+      <button class="btn" id="saveBtn" onclick="saveDay()" disabled style="margin-top:14px">更新する</button>
       <div class="savemsg" id="saveMsg"></div>
-      <div class="hint">日付をタップで「選んだスタッフ・場所」を割り当て／解除。<b>ドラッグ（なぞる）で連続割り当て</b>。同じ日をもう一度タップで解除、別の場所を選んで押すと変更。右上の小さな数字はその日の配置人数です。</div>
+      <div class="hint">その日いる人の <b>西／東</b> を選びます（選んだボタンをもう一度押すと外れます）。決めたら<b>「更新する」で保存</b>。保存するまでスプレッドシートには反映されません。</div>
     </div>
     <div class="card">
       <h2>🧾 直近の付与</h2>
@@ -165,12 +167,14 @@ function modal(emoji,title,big){
   document.body.appendChild(m);
 }
 
-/* ========= 配置カレンダー入力 ========= */
-var calStaffId=null, calLoc='西口', calY=null, calM=null; // calM:0-11
-var monthRows=[];          // その月の全配置 [{date,staffId,location}]
-var myMap={};              // 選択スタッフの日付->場所
-var dayCount={};           // 日付->その日の配置人数
-var painting=false, paintMode='add', touched={};
+/* ========= 配置を決める（日付起点・ボタンで一括更新） ========= */
+var staffAll=[];      // [{id,name,fullName}]
+var calY=null, calM=null;
+var monthRows=[];     // その月の全配置 [{date,staffId,location}]
+var dayCount={};      // 日付->配置人数
+var selDate=null;     // 選択中の日付
+var dayRoster={};     // 選択日の編集中 {staffId:location}
+var dirty=false;
 
 function esc2(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function p2(n){return (n<10?'0':'')+n;}
@@ -180,36 +184,27 @@ function dstr(day){return calY+'-'+p2(calM+1)+'-'+p2(day);}
 window.addEventListener('load', function(){
   var d=new Date(); calY=d.getFullYear(); calM=d.getMonth();
   api('staffMaster',{}).then(function(r){
-    var sel=document.getElementById('calStaff');
-    if(!r||!r.ok||!r.staff.length){ sel.innerHTML='<option>スタッフ未登録</option>'; return; }
-    sel.innerHTML=r.staff.map(function(s){
-      var label=(s.fullName?s.fullName:s.name)+'（'+s.id+'）';
-      return '<option value="'+esc2(s.id)+'">'+esc2(label)+'</option>';
-    }).join('');
-    calStaffId=r.staff[0].id;
-    loadMonth();
-  }).catch(function(){ document.getElementById('calStaff').innerHTML='<option>読み込み失敗</option>'; });
+    staffAll=(r&&r.ok&&r.staff)?r.staff:[];
+    loadMonth(true);
+  }).catch(function(){ document.getElementById('cal2').innerHTML='<div class="hint" style="grid-column:1/-1">スタッフ読み込み失敗</div>'; });
 });
-function onStaffChange(){ calStaffId=document.getElementById('calStaff').value; rebuildMaps(); renderCal2(); }
-function pickLoc(loc){ calLoc=loc;
-  document.getElementById('locWest').classList.toggle('on',loc==='西口');
-  document.getElementById('locEast').classList.toggle('on',loc==='東口');
-}
-function calStep(delta){ calM+=delta; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;} loadMonth(); }
 
-function loadMonth(){
+function calStep(delta){
+  if(dirty && !confirm('保存していない変更があります。移動すると破棄されます。よろしいですか？')) return;
+  calM+=delta; if(calM<0){calM=11;calY--;} if(calM>11){calM=0;calY++;}
+  dirty=false; selDate=null; loadMonth(true);
+}
+function loadMonth(selectToday){
   document.getElementById('cal2').innerHTML='<div class="hint" style="grid-column:1/-1;margin:0">読み込み中… <span class="spin"></span></div>';
   api('scheduleMonth',{ym:ymStr()}).then(function(r){
-    monthRows=(r&&r.rows)||[]; rebuildMaps(); renderCal2();
+    monthRows=(r&&r.rows)||[]; recount(); renderCal2();
+    if(selectToday){
+      var t=new Date(); var td=t.getFullYear()+'-'+p2(t.getMonth()+1)+'-'+p2(t.getDate());
+      if(td.indexOf(ymStr())===0) selectDate(td); else { document.getElementById('rosterHead').textContent='↑ 日付を選んでください'; document.getElementById('rosterList').innerHTML=''; }
+    } else if(selDate){ renderRosterFromMonth(); }
   }).catch(function(){ document.getElementById('cal2').innerHTML='<div class="hint" style="grid-column:1/-1">読み込み失敗</div>'; });
 }
-function rebuildMaps(){
-  myMap={}; dayCount={};
-  monthRows.forEach(function(row){
-    dayCount[row.date]=(dayCount[row.date]||0)+1;
-    if(row.staffId===calStaffId) myMap[row.date]=row.location||'（未設定）';
-  });
-}
+function recount(){ dayCount={}; monthRows.forEach(function(row){ dayCount[row.date]=(dayCount[row.date]||0)+1; }); }
 function renderCal2(){
   document.getElementById('calMon2').textContent=calY+'年 '+(calM+1)+'月';
   var startDow=new Date(calY,calM,1).getDay();
@@ -220,68 +215,65 @@ function renderCal2(){
   for(var i=0;i<startDow;i++) html+='<div class="cell empty"></div>';
   for(var day=1;day<=days;day++){
     var ds=dstr(day);
-    var on=!!myMap[ds];
-    html+='<div class="cell'+(on?' on':'')+(ds===today?' today2':'')+'" data-d="'+ds+'">'
-      +(dayCount[ds]?'<span class="cnt">'+dayCount[ds]+'</span>':'')
-      +day
-      +(on?'<span class="lo">'+esc2(myMap[ds].charAt(0))+'</span>':'')
-      +'</div>';
+    var cls='cell'+(dayCount[ds]?' has':'')+(ds===today?' today2':'')+(ds===selDate?' sel':'');
+    html+='<div class="'+cls+'" onclick="selectDate(\''+ds+'\')">'+day+(dayCount[ds]?'<span class="cnt">'+dayCount[ds]+'</span>':'')+'</div>';
   }
   document.getElementById('cal2').innerHTML=html;
-  bindCells();
 }
-function bindCells(){
-  document.querySelectorAll('#cal2 .cell:not(.empty)').forEach(function(c){
-    c.addEventListener('pointerdown',function(e){
-      e.preventDefault();
-      painting=true; touched={};
-      var ds=c.getAttribute('data-d');
-      // モード決定：未割当→add / 同じ場所→remove / 別の場所→add(変更)
-      var cur=myMap[ds];
-      paintMode=(!cur)?'add':(cur===calLoc?'remove':'add');
-      applyCell(ds);
-    });
+function selectDate(ds){
+  if(dirty && ds!==selDate && !confirm('保存していない変更があります。別の日に移ると破棄されます。よろしいですか？')) return;
+  selDate=ds; dirty=false;
+  renderRosterFromMonth();
+  renderCal2();
+}
+function renderRosterFromMonth(){
+  dayRoster={};
+  monthRows.forEach(function(row){ if(row.date===selDate) dayRoster[row.staffId]=row.location||'西口'; });
+  renderRoster();
+  markDirty(false);
+}
+function renderRoster(){
+  var d=new Date(selDate+'T00:00:00');
+  var n=Object.keys(dayRoster).length;
+  document.getElementById('rosterHead').innerHTML=(d.getMonth()+1)+'月'+d.getDate()+'日 の配置　<span style="font-weight:700;color:var(--ink-soft);font-size:13px">（'+n+'人）</span>';
+  if(!staffAll.length){ document.getElementById('rosterList').innerHTML='<div class="hint">スタッフが登録されていません。</div>'; return; }
+  var html='';
+  staffAll.forEach(function(s){
+    var cur=dayRoster[s.id]||'';
+    var label=(s.fullName?s.fullName:s.name)+'（'+s.id+'）';
+    html+='<div class="rrow"><div class="rname">'+esc2(label)+'</div><div class="rseg">'
+      +'<button class="w'+(cur==='西口'?' on':'')+'" onclick="setRoster(\''+s.id+'\',\'西口\')">西</button>'
+      +'<button class="e'+(cur==='東口'?' on':'')+'" onclick="setRoster(\''+s.id+'\',\'東口\')">東</button>'
+      +'</div></div>';
   });
+  document.getElementById('rosterList').innerHTML=html;
 }
-/* ドラッグ中：指/マウス直下のマスを探して塗る（タッチでも動く） */
-document.addEventListener('pointermove',function(e){
-  if(!painting) return;
-  var el=document.elementFromPoint(e.clientX, e.clientY);
-  var cell=el&&el.closest?el.closest('.cell'):null;
-  if(cell && !cell.classList.contains('empty')){
-    var ds=cell.getAttribute('data-d');
-    if(ds) applyCell(ds);
-  }
-});
-function applyCell(ds){
-  if(touched[ds]) return; touched[ds]=true;
-  if(paintMode==='add'){ myMap[ds]=calLoc; }
-  else { delete myMap[ds]; }
-  // 即時再描画（該当セルのみ更新）
-  var c=document.querySelector('#cal2 .cell[data-d="'+ds+'"]'); if(!c) return;
-  var day=parseInt(ds.slice(8),10);
-  var on=!!myMap[ds];
-  c.className='cell'+(on?' on':'');
-  c.innerHTML=(dayCount[ds]?'<span class="cnt">'+dayCount[ds]+'</span>':'')+day+(on?'<span class="lo">'+esc2((myMap[ds]||'').charAt(0))+'</span>':'');
+function setRoster(id, loc){
+  if(dayRoster[id]===loc) delete dayRoster[id]; else dayRoster[id]=loc;
+  markDirty(true); renderRoster();
 }
-document.addEventListener('pointerup',function(){
-  if(!painting) return; painting=false;
-  var dates=Object.keys(touched); if(!dates.length) return;
-  var msg=document.getElementById('saveMsg'); msg.textContent='保存中…';
-  var action=(paintMode==='add')?'scheduleBulkSet':'scheduleBulkRemove';
-  var payload=(paintMode==='add')?{staffId:calStaffId,location:calLoc,dates:dates}:{staffId:calStaffId,dates:dates};
-  api(action,payload).then(function(r){
-    if(!r||!r.ok){ msg.textContent='保存に失敗しました。もう一度お試しください。'; return; }
-    // ローカルの月データを更新（人数カウント整合のため反映）
-    dates.forEach(function(ds){
-      monthRows=monthRows.filter(function(x){return !(x.staffId===calStaffId && x.date===ds);});
-      if(paintMode==='add') monthRows.push({date:ds,staffId:calStaffId,location:calLoc});
-    });
-    rebuildMaps(); renderCal2();
-    msg.textContent='保存しました（'+dates.length+'日分）';
-    setTimeout(function(){ if(msg.textContent.indexOf('保存しました')===0) msg.textContent=''; },2500);
-  }).catch(function(){ msg.textContent='通信エラー。もう一度お試しください。'; });
-});
+function markDirty(v){
+  dirty=v;
+  var b=document.getElementById('saveBtn'); b.disabled=!v;
+  var msg=document.getElementById('saveMsg');
+  msg.className='savemsg'+(v?' dirty':''); msg.textContent=v?'未保存の変更があります':'';
+}
+function saveDay(){
+  if(!selDate) return;
+  var b=document.getElementById('saveBtn'); b.disabled=true; b.innerHTML='更新中… <span class="spin"></span>';
+  var assignments=Object.keys(dayRoster).map(function(id){return {staffId:id, location:dayRoster[id]};});
+  api('scheduleSetDay',{date:selDate, assignments:assignments}).then(function(r){
+    b.innerHTML='更新する';
+    if(!r||!r.ok){ document.getElementById('saveMsg').textContent='保存に失敗しました。'+(r&&r.msg?r.msg:''); b.disabled=false; return; }
+    // ローカルの月データを更新
+    monthRows=monthRows.filter(function(x){return x.date!==selDate;});
+    assignments.forEach(function(a){ monthRows.push({date:selDate, staffId:a.staffId, location:a.location}); });
+    recount(); renderCal2();
+    markDirty(false);
+    var msg=document.getElementById('saveMsg'); msg.className='savemsg'; msg.textContent='更新しました（'+assignments.length+'人）';
+    setTimeout(function(){ if(msg.textContent.indexOf('更新しました')===0) msg.textContent=''; },2500);
+  }).catch(function(){ b.innerHTML='更新する'; b.disabled=false; document.getElementById('saveMsg').textContent='通信エラー。もう一度お試しください。'; });
+}
 </script>
 </body>
 </html>
