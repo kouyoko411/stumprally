@@ -177,7 +177,6 @@
       <button onclick="closeMenu();confirmLogout()"><span class="mi">🚪</span>ログアウト</button>
     </div>
   </div>
-
   <div class="content">
     <!-- ログイン -->
     <section id="scLogin">
@@ -190,7 +189,6 @@
         <div class="hint">※ 氏名などの個人情報は登録・表示されません。</div>
       </div>
     </section>
-
     <!-- ホーム -->
     <section id="scHome" class="hidden">
       <div class="card">
@@ -204,11 +202,10 @@
       </div>
       <div class="card">
         <h2>📸 スタンプを集める</h2>
-        <div class="hint" style="margin-top:0">名札のQRを読み取り、今日受けた授業数（0〜10）を申告しよう。<br>その日最初の読み取りで<b>登校ポイント+1</b>。0（自習）は1日1回まで。</div>
+        <div class="hint" style="margin-top:0">スタッフの名札のQRを読み取り、今日受けた授業数（0〜10）を申告してください。<br>その日最初の読み取りで<b>登校ポイント+1</b>。0（自習）は1日1回まで。</div>
         <button class="btn" onclick="go('scScan')">QRコードを読み取る</button>
       </div>
     </section>
-
     <!-- QRスキャン -->
     <section id="scScan" class="hidden">
       <div class="card">
@@ -219,7 +216,6 @@
         <button class="btn ghost" onclick="go('scHome')">もどる</button>
       </div>
     </section>
-
     <!-- スタンプ台紙 -->
     <section id="scDaishi" class="hidden">
       <div class="card">
@@ -230,7 +226,7 @@
           <button onclick="calMove(1)">›</button>
         </div>
         <div class="cal" id="calGrid"></div>
-        <div class="hint">その日に交流したスタッフのハンコが並びます（4人以上は「+n」表示）。</div>
+        <div class="hint">その日に交流したスタッフのハンコが並びます。</div>
       </div>
       <div class="card">
         <h2>🧮 受講スタンプ（通算）</h2>
@@ -238,7 +234,6 @@
         <div class="hint">受講1コマにつき1マス、申告のたびに左上から順に押されます。</div>
       </div>
     </section>
-
     <!-- スタッフ -->
     <section id="scStaff" class="hidden">
       <div class="card">
@@ -246,8 +241,8 @@
         <div class="complete" id="completeMsg">—</div>
         <div class="subtabs" id="kubunTabs">
           <button class="on" onclick="kubunFilter('all',this)">全体</button>
-          <button onclick="kubunFilter('文系',this)">📘 文系</button>
-          <button onclick="kubunFilter('理系',this)">🔬 理系</button>
+          <button onclick="kubunFilter('文系',this)">文系</button>
+          <button onclick="kubunFilter('理系',this)">理系</button>
         </div>
         <div class="staffgrid" id="staffGrid"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
         <div class="hint">緑✓＝取得済み／グレー破線＝未取得。左帯：<b style="color:#e08a2b">文系</b>／<b style="color:#2b8fd4">理系</b>。下の「西口/東口」は本日いる場所。タップで詳細。</div>
@@ -260,10 +255,9 @@
           <button onclick="schedMove(1)">›</button>
         </div>
         <div id="schedWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
-        <div class="hint">その日いるスタッフを西口／東口に分けて表示。✓＝取得済み。まだの人に会いに行こう！</div>
+        <div class="hint">✓＝取得済み。まだ話していない人に話しかけに行こう！</div>
       </div>
     </section>
-
     <!-- ランキング -->
     <section id="scRank" class="hidden">
       <div class="card">
@@ -277,23 +271,22 @@
         <div class="hint" id="rankMeta"></div>
       </div>
     </section>
-
     <!-- ルール・使い方 -->
     <section id="scRules" class="hidden">
       <div class="card">
         <h2>📖 ルール・使い方</h2>
         <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRコードを読み取ると、自動で+1ポイントがもらえます（スタッフは誰でもOK）。</span></div></div>
-        <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>スタッフの名札のQRコードを読み取り、その先生・スタッフの前で受けた授業数（0〜10）を入力すると、その数だけポイントがもらえます。</span></div></div>
+        <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>スタッフの名札のQRコードを読み取り、その先生・スタッフの前で受けた授業数（0〜10）を入力すると、その数だけポイントがもらえます。複数コマ受けた日は複数人のスタッフからスタンプをもらうことができます。</span></div></div>
         <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>自習の日（0コマ）について</b><span>授業を受けていない日は「0」を選べます。ただし「0」にできるのは1日1回までです。</span></div></div>
-        <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナスポイント</b><span>これまでに交流した「違うスタッフの人数」が5人ごとに、+3ポイントのボーナスがもらえます。</span></div></div>
-        <div class="rule-item"><div class="ic">📖</div><div class="txt"><b>スタンプ台紙の見方</b><span>カレンダーには「いつ誰と交流したか」、升目には「これまでの受講スタンプ」、収集状況には「会ったスタッフ」が記録されます。</span></div></div>
-        <div class="rule-item"><div class="ic">📅</div><div class="txt"><b>会えるスタッフ</b><span>台紙の下の方で、その日いるスタッフを西口／東口に分けて確認できます。まだ会っていない人に会いに行こう。</span></div></div>
+        <div class="rule-item"><div class="ic">✏️</div><div class="txt"><b>定石演習について</b><span>定石演習は4問で、受講1コマと同じ扱いとして換算します。</span></div></div>
+        <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナスポイント</b><span>これまで話していない新しいスタッフ5人とのスタンプを集めるごとに、+3ポイントのボーナスがもらえます。</span></div></div>
+        <div class="rule-item"><div class="ic">📖</div><div class="txt"><b>スタンプ台紙の見方</b><span>カレンダーには「いつ誰と交流したか」、升目には「これまでの受講スタンプ」</span></div></div>
+        <div class="rule-item"><div class="ic">👥</div><div class="txt"><b>スタッフ</b><span>収集状況には「会ったスタッフ」が記録されます。その日いるスタッフを東口／西口に分けて確認できます。</span></div></div>
         <div class="rule-item"><div class="ic">🏆</div><div class="txt"><b>ランキング</b><span>全体・学年別（高0／高1／高2）をいつでも確認できます。同じポイントの人は同じ順位です。</span></div></div>
         <button class="btn ghost" style="margin-top:14px" onclick="showWelcome()">▶ ようこそ画面をもう一度見る</button>
       </div>
     </section>
   </div>
-
   <div class="nav hidden" id="nav">
     <button id="nHome" class="on" onclick="go('scHome')"><span class="ic">🏠</span>ホーム</button>
     <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
@@ -301,7 +294,6 @@
     <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
   </div>
 </div>
-
 <!-- 初回ログイン時のようこそシート -->
 <div class="overlay hidden" id="welcome">
   <div class="sheet">
@@ -310,10 +302,9 @@
     <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>QRを読み取り、受けた授業数（0〜10）を入力するとポイント獲得。</span></div></div>
     <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>0コマ申告は1日1回まで</b><span>自習の日は「0」を選べますが、1日1回だけです。</span></div></div>
     <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナス</b><span>違うスタッフ5人ごとに+3ポイント。</span></div></div>
-    <button class="btn" style="margin-top:16px" onclick="hideWelcome()">わかった！はじめる</button>
+    <button class="btn" style="margin-top:16px" onclick="hideWelcome()">はじめる</button>
   </div>
 </div>
-
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 /* ====================================================================
@@ -322,9 +313,7 @@
  * ==================================================================== */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbwxA0SMa4kK41IB8QXR4-HY7wH0Tr_-E_FYNFxjzbkiI61rKHSTpkSZDvgYfnYgg3ywew/exec';
 /* ==================================================================== */
-
 var me=null, meGrade=null, rankMode='all', rankGrade=null, qr=null, scanning=false, lastScanAt=0, busy=false;
-
 /* ---- GAS API 呼び出し（CORS回避：text/plainの単純リクエスト） ---- */
 function api(action, payload){
   var body = Object.assign({action:action}, payload||{});
@@ -334,7 +323,6 @@ function api(action, payload){
     body: JSON.stringify(body)
   }).then(function(r){ return r.json(); });
 }
-
 /* ---- セッション保持（sessionStorage：仕様2.1 初期実装） ---- */
 function saveSession(id,grade){ try{sessionStorage.setItem('sr_id',id);sessionStorage.setItem('sr_grade',grade||'');}catch(e){} }
 function clearSession(){ try{sessionStorage.removeItem('sr_id');sessionStorage.removeItem('sr_grade');}catch(e){} }
@@ -342,7 +330,6 @@ window.addEventListener('load',function(){
   var id=null; try{id=sessionStorage.getItem('sr_id');}catch(e){}
   if(id){ me=id; meGrade=sessionStorage.getItem('sr_grade'); enterApp(); refreshHome(); }
 });
-
 /* ---- ログイン ---- */
 function doLogin(){
   var v=document.getElementById('loginId').value.trim();
@@ -381,7 +368,6 @@ function logout(){
   document.getElementById('scLogin').classList.remove('hidden');
   document.getElementById('loginId').value='';
 }
-
 /* ---- 画面遷移 ---- */
 function go(id){
   ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
@@ -395,12 +381,10 @@ function go(id){
   if(id==='scStaff') loadStaff();
   if(id==='scRank') loadRanking();
 }
-
 /* ---- ルール：ようこそシート＆初回自動表示 ---- */
 function showWelcome(){ document.getElementById('welcome').classList.remove('hidden'); }
 function hideWelcome(){ document.getElementById('welcome').classList.add('hidden'); try{localStorage.setItem('sr_rules_seen','1');}catch(e){} }
 function maybeShowWelcome(){ try{ if(!localStorage.getItem('sr_rules_seen')) showWelcome(); }catch(e){} }
-
 /* ---- ログアウト確認 ---- */
 function confirmLogout(){
   var m=document.createElement('div'); m.className='modal';
@@ -413,7 +397,6 @@ function confirmLogout(){
   document.getElementById('loCancel').onclick=function(){ m.remove(); };
   m.onclick=function(e){ if(e.target===m) m.remove(); };
 }
-
 /* ---- ホーム ---- */
 function refreshHome(){ api('summary',{studentId:me}).then(applySummary).catch(function(){}); }
 function applySummary(s){
@@ -424,7 +407,6 @@ function applySummary(s){
   document.getElementById('hBar').style.width=(within/5*100)+'%';
   document.getElementById('hBonusMsg').textContent='あと '+s.needForBonus+' 人のスタッフと交流すると +3pt ボーナス！（累計 '+s.staffCount+' 人）';
 }
-
 /* ---- QRスキャン（カメラ） ---- */
 /* ===== QR読み取り（元の同期的な形。ライブラリは同梱ファイルから読込済み） =====
  * getUserMedia は必ず「画面遷移＝タップ操作」の同期の流れの中で呼ぶ。
@@ -513,7 +495,6 @@ function resultModal(emoji,title,big,bonus,sub){
   document.getElementById('rmOk').onclick=function(){ m.remove(); go('scScan'); };
   document.getElementById('rmHome').onclick=function(){ m.remove(); go('scHome'); };
 }
-
 /* ---- スタンプ台紙 ---- */
 var histData=null, calYear=null, calMonth=null;
 function loadDaishi(){
@@ -622,7 +603,6 @@ function staffModal(i){
   m.onclick=function(e){if(e.target===m)m.remove();};
   document.body.appendChild(m);
 }
-
 /* ---- 会えるスタッフ（配置・日付切替） ---- */
 var schedDate=null;
 function fmtDate(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
@@ -664,7 +644,6 @@ function renderSchedule(list){
   document.getElementById('schedWrap').innerHTML=html;
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-
 /* ---- ランキング ---- */
 function rankTab(mode){
   rankMode=mode;
