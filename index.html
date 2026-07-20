@@ -24,16 +24,6 @@
   .topbar .sub{font-size:11px;opacity:.9;margin-top:1px}
   .me{margin-left:auto;text-align:right;font-size:11px;line-height:1.4}
   .me b{font-size:14px}
-  .topacts{margin-left:auto;display:flex;gap:8px}
-  .iconbtn{width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .iconbtn:active{background:rgba(255,255,255,.34)}
-  .appmenu{position:absolute;top:calc(100% - 4px);right:12px;background:#fff;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--aqua-100);overflow:hidden;min-width:180px;z-index:12}
-  .appmenu .mhead{padding:10px 16px;font-size:12px;color:var(--ink-soft);border-bottom:1px solid var(--aqua-100);background:var(--aqua-50)}
-  .appmenu .mhead b{color:var(--aqua-700);font-size:14px}
-  .appmenu button{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;padding:13px 16px;font-size:14px;color:var(--ink);text-align:left;cursor:pointer;font-weight:600}
-  .appmenu button + button{border-top:1px solid var(--aqua-100)}
-  .appmenu button:active{background:var(--aqua-50)}
-  .appmenu button .mi{font-size:18px}
   .content{flex:1;padding:18px 18px 96px}
   .card{background:var(--white);border-radius:20px;padding:22px;box-shadow:var(--shadow);border:1px solid var(--aqua-100)}
   .card + .card{margin-top:16px}
@@ -71,8 +61,8 @@
   .rank .pt{font-weight:800;color:var(--aqua-600);font-size:15px}
   .rank .pt span{font-size:11px;color:var(--ink-soft);font-weight:600}
   .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);display:flex;border-top:1px solid var(--aqua-100);z-index:8}
-  .nav button{flex:1;border:none;background:none;padding:9px 0 12px;font-size:11px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
-  .nav button .ic{font-size:22px}
+  .nav button{flex:1;border:none;background:none;padding:8px 0 11px;font-size:9.5px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:-.02em}
+  .nav button .ic{font-size:19px}
   .nav button.on{color:var(--aqua-600)}
   .hidden{display:none!important}
   .badge{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--aqua-100);color:var(--aqua-700);font-size:12px;font-weight:700}
@@ -167,15 +157,7 @@
   <div class="topbar">
     <span class="logo">❄️</span>
     <div><h1>スタンプラリー</h1><div class="sub">多くのスタッフに話しかけよう！</div></div>
-    <div class="topacts hidden" id="topacts">
-      <button class="iconbtn" id="btnScan" onclick="go('scScan')" aria-label="QRコードを読み取る">📸</button>
-      <button class="iconbtn" id="btnMenu" onclick="toggleMenu()" aria-label="メニュー">☰</button>
-    </div>
-    <div class="appmenu hidden" id="appmenu">
-      <div class="mhead">生徒番号　<b id="meId">—</b></div>
-      <button onclick="closeMenu();go('scRules')"><span class="mi">📘</span>ルールを見る</button>
-      <button onclick="closeMenu();confirmLogout()"><span class="mi">🚪</span>ログアウト</button>
-    </div>
+    <div class="me hidden" id="meBox"><div>生徒番号</div><b id="meId">—</b></div>
   </div>
 
   <div class="content">
@@ -215,7 +197,7 @@
         <h2>📸 QRコード読み取り</h2>
         <div id="reader"></div>
         <div class="err" id="scanErr"></div>
-        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。<span style="opacity:.5">（v6）</span></div>
+        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。</div>
         <button class="btn ghost" onclick="go('scHome')">もどる</button>
       </div>
     </section>
@@ -296,9 +278,12 @@
 
   <div class="nav hidden" id="nav">
     <button id="nHome" class="on" onclick="go('scHome')"><span class="ic">🏠</span>ホーム</button>
+    <button id="nScan" onclick="go('scScan')"><span class="ic">📸</span>読み取り</button>
     <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
     <button id="nStaff" onclick="go('scStaff')"><span class="ic">👥</span>スタッフ</button>
     <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
+    <button id="nRules" onclick="go('scRules')"><span class="ic">📘</span>ルール</button>
+    <button onclick="confirmLogout()"><span class="ic">🚪</span>ログアウト</button>
   </div>
 </div>
 
@@ -361,27 +346,17 @@ function doLogin(){
 function enterApp(summary){
   document.getElementById('scLogin').classList.add('hidden');
   document.getElementById('nav').classList.remove('hidden');
-  document.getElementById('topacts').classList.remove('hidden');
+  document.getElementById('meBox').classList.remove('hidden');
   document.getElementById('meId').textContent=me;
   if(summary) applySummary(summary);
   go('scHome');
   maybeShowWelcome();
 }
-function toggleMenu(){
-  var m=document.getElementById('appmenu');
-  if(m.classList.contains('hidden')) openMenu(); else closeMenu();
-}
-function outsideMenu(e){
-  var m=document.getElementById('appmenu'), b=document.getElementById('btnMenu');
-  if(!m.contains(e.target) && !b.contains(e.target)) closeMenu();
-}
-function openMenu(){ document.getElementById('appmenu').classList.remove('hidden'); setTimeout(function(){document.addEventListener('click',outsideMenu);},0); }
-function closeMenu(){ document.getElementById('appmenu').classList.add('hidden'); document.removeEventListener('click',outsideMenu); }
 function logout(){
-  stopScan(); clearSession(); closeMenu(); me=null;
+  stopScan(); clearSession(); me=null;
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('nav').classList.add('hidden');
-  document.getElementById('topacts').classList.add('hidden');
+  document.getElementById('meBox').classList.add('hidden');
   ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
   document.getElementById('scLogin').classList.remove('hidden');
   document.getElementById('loginId').value='';
