@@ -70,7 +70,11 @@
   .rank .id{flex:1;font-size:15px;font-variant-numeric:tabular-nums}
   .rank .pt{font-weight:800;color:var(--aqua-600);font-size:15px}
   .rank .pt span{font-size:11px;color:var(--ink-soft);font-weight:600}
-  .rankhead{font-size:13px;font-weight:800;color:var(--aqua-700);margin:2px 0 6px}
+  .rankrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
+  .rankhead{font-size:13px;font-weight:800;color:var(--aqua-700)}
+  .rank-refresh{border:1px solid var(--aqua-200);background:var(--aqua-50);color:var(--aqua-700);
+    font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;flex-shrink:0;cursor:pointer}
+  .rank-refresh:active{background:var(--aqua-100)}
   .more-link{text-align:center;padding:10px 0;color:var(--aqua-600);font-size:13px;font-weight:700;cursor:pointer}
   .me-card{background:linear-gradient(135deg,var(--aqua-500),var(--aqua-600));border-radius:18px;padding:16px 18px;color:#fff;margin-top:14px;box-shadow:0 10px 22px rgba(27,135,181,.35)}
   .me-card .lbl{font-size:11px;opacity:.85;margin-bottom:6px}
@@ -283,7 +287,10 @@
           <button id="tGrade" onclick="rankTab('grade')">学年別</button>
         </div>
         <div class="subtabs hidden" id="gradeTabs"></div>
-        <div class="rankhead" id="rankHead">上位10名</div>
+        <div class="rankrow">
+          <div class="rankhead" id="rankHead">上位10名</div>
+          <button class="rank-refresh" id="rankRefresh" onclick="refreshRanking()">🔄 更新</button>
+        </div>
         <div id="rankList"><div class="hint">読み込み中… <span class="spin"></span></div></div>
         <div class="more-link hidden" id="moreLink" onclick="toggleAll()">すべてのランキングを見る ▾</div>
         <div class="hint" id="rankMeta"></div>
@@ -370,6 +377,7 @@ function doLogin(){
 }
 function enterApp(summary){
   histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュを初期化
+  rankCacheData=null; rankCacheKey=null; rankDirty=true; // ランキングキャッシュを初期化
   document.getElementById('scLogin').classList.add('hidden');
   document.getElementById('nav').classList.remove('hidden');
   document.getElementById('topacts').classList.remove('hidden');
@@ -386,6 +394,7 @@ function closeMenu(){ document.getElementById('appmenu').classList.add('hidden')
 function logout(){
   stopScan(); clearSession(); closeMenu(); me=null;
   histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュをクリア
+  rankCacheData=null; rankCacheKey=null; rankDirty=true; // ランキングキャッシュをクリア
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('nav').classList.add('hidden');
   document.getElementById('topacts').classList.add('hidden');
@@ -472,6 +481,7 @@ function claimEventScan(eventId){
   api('event',{studentId:me, event:eventId}).then(function(r){
     busy=false;
     if(!r.ok){ resultModal(r.alreadyEvent?'🔁':'⚠️', r.alreadyEvent?'受け取り済み':'エラー', r.msg||'付与に失敗しました', null, null); return; }
+    rankDirty=true; // イベントで加点されたのでランキングを次回再取得
     resultModal('🎪', (r.eventName||'イベント')+' 出席！', '+'+r.added+' pt', null, 'イベントポイントを獲得しました');
     applySummary(r.summary);
   }).catch(function(){ busy=false; resultModal('⚠️','通信エラー','もう一度お試しください',null,null); });
@@ -499,7 +509,7 @@ function askLessons(token, presetErr){
       }
       box.remove();
       if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); applySummary(r.summary); return; }
-      histDirty=true; // スタンプ登録が成功したので次回アクセス時に履歴を再取得
+      histDirty=true; rankDirty=true; // スタンプ登録が成功したので履歴・ランキングを次回再取得
       var total=(r.attend||0)+(r.added||0)+(r.bonus||0);
       var parts=[]; if(r.attend)parts.push('登校 +'+r.attend); parts.push('受講 +'+r.added); if(r.bonus)parts.push('ボーナス +'+r.bonus);
       resultModal('✨','スタンプ獲得！','+'+total+' pt',
@@ -694,18 +704,27 @@ function rankTab(mode){
   }
   loadRanking();
 }
-var rankFull=[], rankShowAll=false;
+var rankFull=[], rankShowAll=false, rankCacheKey=null, rankCacheData=null, rankDirty=true;
+function applyRanking(res){
+  rankFull=(res&&res.ranking)||[]; rankShowAll=false;
+  renderRankList(); renderMeCard();
+  var d=new Date(res.generatedAt);
+  document.getElementById('rankMeta').textContent='更新: '+d.toLocaleString('ja-JP')+'（同点は同順位）';
+}
+/* ランキングもキャッシュ。自分のスタンプ登録時 or「更新」ボタン押下時のみ再取得 */
 function loadRanking(){
+  var key=rankMode+'|'+(rankMode==='grade'?rankGrade:'');
+  if(rankCacheData && rankCacheKey===key && !rankDirty){ applyRanking(rankCacheData); return; }
   document.getElementById('rankList').innerHTML='<div class="hint">読み込み中… <span class="spin"></span></div>';
   document.getElementById('moreLink').classList.add('hidden');
   document.getElementById('meCard').classList.add('hidden');
   api('ranking',{mode:rankMode, grade:rankMode==='grade'?rankGrade:null}).then(function(res){
-    rankFull=res.ranking||[]; rankShowAll=false;
-    renderRankList(); renderMeCard();
-    var d=new Date(res.generatedAt);
-    document.getElementById('rankMeta').textContent='更新: '+d.toLocaleString('ja-JP')+'（同点は同順位）';
+    rankCacheKey=key; rankCacheData=res; rankDirty=false;
+    applyRanking(res);
   }).catch(function(){ document.getElementById('rankList').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
 }
+/* 「ランキングを更新」ボタン：押したときだけ最新を取り直す */
+function refreshRanking(){ rankDirty=true; loadRanking(); }
 function rankRowHtml(r){
   var g=r.rank<=3?'g'+r.rank:'';
   return '<div class="rank'+(r.id===me?' me':'')+'"><div class="pos '+g+'">'+r.rank+'</div>'
