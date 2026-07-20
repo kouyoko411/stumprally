@@ -369,6 +369,7 @@ function doLogin(){
   });
 }
 function enterApp(summary){
+  histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュを初期化
   document.getElementById('scLogin').classList.add('hidden');
   document.getElementById('nav').classList.remove('hidden');
   document.getElementById('topacts').classList.remove('hidden');
@@ -384,6 +385,7 @@ function openMenu(){ document.getElementById('appmenu').classList.remove('hidden
 function closeMenu(){ document.getElementById('appmenu').classList.add('hidden'); document.removeEventListener('click',outsideMenu); }
 function logout(){
   stopScan(); clearSession(); closeMenu(); me=null;
+  histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュをクリア
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('nav').classList.add('hidden');
   document.getElementById('topacts').classList.add('hidden');
@@ -497,6 +499,7 @@ function askLessons(token, presetErr){
       }
       box.remove();
       if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); applySummary(r.summary); return; }
+      histDirty=true; // スタンプ登録が成功したので次回アクセス時に履歴を再取得
       var total=(r.attend||0)+(r.added||0)+(r.bonus||0);
       var parts=[]; if(r.attend)parts.push('登校 +'+r.attend); parts.push('受講 +'+r.added); if(r.bonus)parts.push('ボーナス +'+r.bonus);
       resultModal('✨','スタンプ獲得！','+'+total+' pt',
@@ -519,32 +522,38 @@ function resultModal(emoji,title,big,bonus,sub){
   document.getElementById('rmHome').onclick=function(){ m.remove(); go('scHome'); };
 }
 /* ---- スタンプ台紙 ---- */
-var histData=null, calYear=null, calMonth=null;
+var histData=null, histDirty=true, calYear=null, calMonth=null;
+/* history を一度取得したらキャッシュ。claim成功時に histDirty=true で次回だけ再取得 */
+function ensureHistory(callback){
+  if(histData && !histDirty){ callback(histData); return; }
+  api('history',{studentId:me}).then(function(h){
+    if(h && h.ok){ histData=h; histDirty=false; }
+    callback(h);
+  }).catch(function(){ callback(null); });
+}
 function loadDaishi(){
   document.getElementById('gridWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
   document.getElementById('calGrid').innerHTML='';
-  api('history',{studentId:me}).then(function(h){
-    if(!h||!h.ok){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました</div>'; return; }
-    histData=h;
+  ensureHistory(function(h){
+    if(!h||!h.ok){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; return; }
     if(calYear===null){
       var last=h.stamps.length?h.stamps[h.stamps.length-1].date:null;
       var d=last?new Date(last+'T00:00:00'):new Date();
       calYear=d.getFullYear(); calMonth=d.getMonth();
     }
     renderCalendar(); renderGrid(h.grid);
-  }).catch(function(){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+  });
 }
 /* ---- スタッフ（収集状況＋会えるスタッフ） ---- */
 function loadStaff(){
   document.getElementById('staffGrid').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
-  api('history',{studentId:me}).then(function(h){
-    if(!h||!h.ok){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました</div>'; return; }
-    histData=h;
+  ensureHistory(function(h){
+    if(!h||!h.ok){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; return; }
     renderStaff(h);
     schedDate = h.scheduleDate || todayStrLocal();
     document.getElementById('schDate').textContent=schedLabel(schedDate);
     renderSchedule(h.schedule||[]);
-  }).catch(function(){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+  });
 }
 function calMove(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
 function pad2(n){return (n<10?'0':'')+n;}
