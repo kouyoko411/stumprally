@@ -137,7 +137,9 @@
   .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
   .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative;overflow:hidden;cursor:pointer}
   .scell:active{transform:scale(.95)}
-  .scell .nm{font-size:15px;font-weight:800}
+  .scell .nm{font-size:15px;font-weight:800;white-space:nowrap;max-width:98%}
+  .scell .nm.sm{font-size:12px}
+  .scell .nm.sm2{font-size:10px;letter-spacing:-.5px}
   /* 取得：色塗り＋緑の角リボン✓ */
   .scell.got{background:linear-gradient(150deg,#d9f2ff,#fff);border-color:var(--aqua-400)}
   .scell.got .nm{color:var(--aqua-700)}
@@ -775,7 +777,7 @@ function drawStaffGrid(){
       +(kl?'<span class="kb">'+kl+'</span>':'')
       +(s.collected?'<span class="ck">✓</span>':'')
       +(s.secret?'<span style="position:absolute;top:2px;right:5px;font-size:11px">🔒</span>':'')
-      +'<span class="nm">'+esc(s.name).slice(0,2)+'</span>'
+      +'<span class="nm'+(s.name.length>=4?' sm2':(s.name.length===3?' sm':''))+'">'+esc(s.name)+'</span>'
       +(s.todayLoc?'<span class="loc">'+esc(s.todayLoc)+'</span>':'')
       +'</div>';
   });
