@@ -188,6 +188,47 @@
   .sheet-head .emoji{font-size:40px}
   .sheet-head h3{margin:6px 0 2px;font-size:19px}
   .sheet-head p{margin:0;font-size:12.5px;color:var(--ink-soft)}
+  /* ===== ホーム画面に追加ガイド（ようこそ2ページ目） ===== */
+  .hsgtabs{display:flex;background:var(--aqua-100);border-radius:14px;padding:4px;margin-bottom:14px}
+  .hsgtabs button{flex:1;padding:9px;border:none;background:transparent;border-radius:11px;font-weight:700;color:var(--ink-soft);font-size:13px;cursor:pointer}
+  .hsgtabs button.on{background:#fff;color:var(--aqua-600);box-shadow:0 2px 6px rgba(27,135,181,.15)}
+  .hsg-guide{display:none}
+  .hsg-guide.on{display:block}
+  .hstep{background:#fff;border-radius:16px;padding:14px;box-shadow:var(--shadow);border:1px solid var(--aqua-100);margin-bottom:12px}
+  .hstep .shead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .hstep .snum{width:24px;height:24px;border-radius:50%;background:var(--aqua-500);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .hstep .stitle{font-weight:800;font-size:13.5px;line-height:1.4}
+  .phone{background:#eef3f6;border-radius:16px;overflow:hidden;border:1px solid #d7e0e6}
+  .pbar{background:#fff;padding:9px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e3e9ec}
+  .pbar .url{flex:1;background:#f1f4f6;border-radius:8px;padding:6px 10px;font-size:11px;color:#6a7a83;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .pbar .picon{font-size:15px;color:#4a7285}
+  .pscreen{background:linear-gradient(160deg,#eafaff,#d8f0fb);padding:22px 16px;text-align:center;min-height:80px;display:flex;align-items:center;justify-content:center}
+  .pscreen .content-line{font-size:11px;color:#7a95a0}
+  .toolbar{background:#fff;display:flex;justify-content:space-around;align-items:center;padding:11px 6px;border-top:1px solid #e3e9ec}
+  .toolbar .ti{font-size:19px;color:#4a7285;position:relative}
+  .toolbar .ti.target{color:var(--aqua-600)}
+  .menu-sheet{background:#fff}
+  .msheet-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:12.5px;color:#3a4750;border-bottom:1px solid #f0f3f5}
+  .msheet-item:last-child{border-bottom:none}
+  .msheet-item.target{background:var(--aqua-50);color:var(--aqua-700);font-weight:800}
+  .msheet-item .mi{font-size:16px;width:20px;text-align:center}
+  .menu-dots{background:#fff}
+  .dmenu-item{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:12px;color:#3a4750;border-bottom:1px solid #f0f3f5}
+  .dmenu-item:last-child{border-bottom:none}
+  .dmenu-item.target{background:var(--aqua-50);color:var(--aqua-700);font-weight:800}
+  .dmenu-item .mi{font-size:15px;width:18px;text-align:center}
+  .pointer{position:absolute;width:32px;height:32px;border:2.5px solid var(--gold);border-radius:50%;top:50%;right:2px;transform:translateY(-50%);animation:hpulse 1.4s ease-in-out infinite}
+  @keyframes hpulse{0%{transform:translateY(-50%) scale(.9);opacity:1}70%{transform:translateY(-50%) scale(1.35);opacity:0}100%{opacity:0}}
+  .caption{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:9px}
+  .caption b{color:var(--aqua-700)}
+  .confirm-card{background:#fff;border-radius:14px;padding:16px;margin:0 auto;max-width:220px;box-shadow:0 6px 16px rgba(0,0,0,.12);text-align:center}
+  .confirm-card .cicon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--aqua-400),var(--aqua-600));margin:0 auto 8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:900}
+  .confirm-card .cname{font-size:12px;font-weight:700;margin-bottom:10px}
+  .confirm-card .cbtns{display:flex;gap:8px}
+  .confirm-card .cbtns span{flex:1;padding:7px 0;border-radius:8px;font-size:11px;font-weight:700}
+  .confirm-card .cancel{background:#eef1f3;color:#8a97a0}
+  .confirm-card .add{background:var(--aqua-500);color:#fff}
+  .final-note{background:var(--aqua-50);border:1.5px dashed var(--aqua-300);border-radius:14px;padding:12px 14px;font-size:12px;color:var(--aqua-700);margin-top:6px}
   /* ===== 開発版だとひと目で分かるバッジ ===== */
   .devbadge{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:50;
     background:#e2556b;color:#fff;font-size:11px;font-weight:800;letter-spacing:.05em;
@@ -337,15 +378,86 @@
     <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
   </div>
 </div>
-<!-- 初回ログイン時のようこそシート -->
+<!-- 初回ログイン時のようこそシート（2ページ構成） -->
 <div class="overlay hidden" id="welcome">
   <div class="sheet">
-    <div class="sheet-head"><div class="emoji">❄️</div><h3>ようこそ！</h3><p>はじめに、スタンプの集め方とルールを確認しましょう</p></div>
-    <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRを読み取ると、自動で+1ポイント。</span></div></div>
-    <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>QRを読み取り、受けた授業数（0〜10）を入力するとポイント獲得。</span></div></div>
-    <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>0コマ申告は1日1回まで</b><span>自習の日は「0」を選べますが、1日1回だけです。</span></div></div>
-    <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナス</b><span>違うスタッフ5人ごとに+3ポイント。</span></div></div>
-    <button class="btn" style="margin-top:16px" onclick="hideWelcome()">はじめる</button>
+    <!-- 1ページ目：ルール -->
+    <div id="welcomeStep1">
+      <div class="sheet-head"><div class="emoji">❄️</div><h3>ようこそ！</h3><p>はじめに、スタンプの集め方とルールを確認しましょう</p></div>
+      <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRを読み取ると、自動で+1ポイント。</span></div></div>
+      <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>QRを読み取り、受けた授業数（0〜10）を入力するとポイント獲得。</span></div></div>
+      <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>0コマ申告は1日1回まで</b><span>自習の日は「0」を選べますが、1日1回だけです。</span></div></div>
+      <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナス</b><span>違うスタッフ5人ごとに+3ポイント。</span></div></div>
+      <button class="btn" style="margin-top:16px" onclick="welcomeNext()">次へ</button>
+    </div>
+    <!-- 2ページ目：ホーム画面に追加ガイド -->
+    <div id="welcomeStep2" class="hidden">
+      <div class="sheet-head"><div class="emoji">📱</div><h3>ホーム画面に追加すると便利です</h3><p>毎回ブラウザで開くのが面倒な人へ。一度追加すれば、次回からアイコンをワンタップで開けます</p></div>
+      <div class="hsgtabs">
+        <button class="on" onclick="hsgTab('ios',this)">🍎 iPhone</button>
+        <button onclick="hsgTab('android',this)">🤖 Android</button>
+      </div>
+      <!-- iPhone -->
+      <div class="hsg-guide on" id="hsg-ios">
+        <div class="hstep">
+          <div class="shead"><div class="snum">1</div><div class="stitle">Safariでこのサイトを開いた状態で、下の「共有」ボタンをタップ</div></div>
+          <div class="phone">
+            <div class="pbar"><span class="picon">↻</span><div class="url">kouyoko411.github.io/stumprally</div></div>
+            <div class="pscreen"><div class="content-line">（スタンプラリーの画面）</div></div>
+            <div class="toolbar"><span class="ti">‹</span><span class="ti">›</span><span class="ti target">⬆️<span class="pointer"></span></span><span class="ti">📖</span><span class="ti">▢▢</span></div>
+          </div>
+          <div class="caption">画面下のツールバーにある、上矢印のアイコン（<b>共有ボタン</b>）をタップします。見当たらない場合は「…」ボタンの中にあります。</div>
+        </div>
+        <div class="hstep">
+          <div class="shead"><div class="snum">2</div><div class="stitle">出てくるメニューをスクロールし、「ホーム画面に追加」をタップ</div></div>
+          <div class="phone">
+            <div class="menu-sheet">
+              <div class="msheet-item"><span class="mi">📋</span>コピー</div>
+              <div class="msheet-item"><span class="mi">🔖</span>ブックマークを追加</div>
+              <div class="msheet-item target"><span class="mi">➕</span>ホーム画面に追加</div>
+              <div class="msheet-item"><span class="mi">🖨️</span>プリント</div>
+            </div>
+          </div>
+          <div class="caption"><b>「ホーム画面に追加」</b>という項目を見つけてタップしてください。</div>
+        </div>
+        <div class="hstep">
+          <div class="shead"><div class="snum">3</div><div class="stitle">名前を確認して「追加」をタップすれば完了</div></div>
+          <div class="phone"><div class="pscreen"><div class="confirm-card"><div class="cicon">❄️</div><div class="cname">スタンプラリー</div><div class="cbtns"><span class="cancel">キャンセル</span><span class="add">追加</span></div></div></div></div>
+          <div class="caption">これでホーム画面にアイコンが追加されます。次回からはアイコンをタップするだけですぐ開けます。</div>
+        </div>
+      </div>
+      <!-- Android -->
+      <div class="hsg-guide" id="hsg-android">
+        <div class="hstep">
+          <div class="shead"><div class="snum">1</div><div class="stitle">Chromeでこのサイトを開いた状態で、右上の「⋮」メニューをタップ</div></div>
+          <div class="phone">
+            <div class="pbar"><div class="url">kouyoko411.github.io/stumprally</div><span class="picon target" style="position:relative">⋮<span class="pointer" style="right:-4px;top:55%"></span></span></div>
+            <div class="pscreen"><div class="content-line">（スタンプラリーの画面）</div></div>
+          </div>
+          <div class="caption">画面右上にある、縦に3つ並んだ点「⋮」のメニューボタンをタップします。</div>
+        </div>
+        <div class="hstep">
+          <div class="shead"><div class="snum">2</div><div class="stitle">「ホーム画面に追加」または「アプリをインストール」をタップ</div></div>
+          <div class="phone">
+            <div class="menu-dots">
+              <div class="dmenu-item"><span class="mi">⭐</span>ブックマーク</div>
+              <div class="dmenu-item"><span class="mi">⬇️</span>ダウンロード</div>
+              <div class="dmenu-item target"><span class="mi">➕</span>ホーム画面に追加 / インストール</div>
+              <div class="dmenu-item"><span class="mi">🔍</span>ページ内検索</div>
+            </div>
+          </div>
+          <div class="caption">端末やバージョンによって「ホーム画面に追加」または「インストール」と表示されます。どちらでも同じ操作です。</div>
+        </div>
+        <div class="hstep">
+          <div class="shead"><div class="snum">3</div><div class="stitle">確認画面が出たら「追加」または「インストール」をタップ</div></div>
+          <div class="phone"><div class="pscreen"><div class="confirm-card"><div class="cicon">❄️</div><div class="cname">スタンプラリー</div><div class="cbtns"><span class="cancel">キャンセル</span><span class="add">追加</span></div></div></div></div>
+          <div class="caption">これでホーム画面（またはアプリ一覧）にアイコンが追加されます。次回からはアイコンをタップするだけで開けます。</div>
+        </div>
+      </div>
+      <div class="final-note">💡 これは操作イメージをわかりやすくした<b>疑似画像</b>です。実機のボタンの位置・文言はブラウザのバージョンによって多少異なる場合があります。</div>
+      <button class="btn" style="margin-top:14px" onclick="hideWelcome()">はじめる</button>
+      <button class="btn ghost" style="margin-top:8px" onclick="hideWelcome()">あとで（スキップ）</button>
+    </div>
   </div>
 </div>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -429,8 +541,24 @@ function go(id){
   if(id==='scStaff') loadStaff();
   if(id==='scRank') loadRanking();
 }
-/* ---- ルール：ようこそシート＆初回自動表示 ---- */
-function showWelcome(){ document.getElementById('welcome').classList.remove('hidden'); }
+/* ---- ルール：ようこそシート（2ページ構成）＆初回自動表示 ---- */
+function showWelcome(){
+  // 常に1ページ目（ルール）から表示
+  document.getElementById('welcomeStep1').classList.remove('hidden');
+  document.getElementById('welcomeStep2').classList.add('hidden');
+  document.getElementById('welcome').classList.remove('hidden');
+}
+function welcomeNext(){
+  document.getElementById('welcomeStep1').classList.add('hidden');
+  document.getElementById('welcomeStep2').classList.remove('hidden');
+  var sh=document.querySelector('#welcome .sheet'); if(sh) sh.scrollTop=0;
+}
+function hsgTab(which,btn){
+  document.querySelectorAll('#welcomeStep2 .hsgtabs button').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  document.getElementById('hsg-ios').classList.toggle('on',which==='ios');
+  document.getElementById('hsg-android').classList.toggle('on',which==='android');
+}
 function hideWelcome(){ document.getElementById('welcome').classList.add('hidden'); try{localStorage.setItem('sr_rules_seen','1');}catch(e){} }
 function maybeShowWelcome(){ try{ if(!localStorage.getItem('sr_rules_seen')) showWelcome(); }catch(e){} }
 /* ---- ログアウト確認 ---- */
