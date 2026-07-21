@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>スタンプラリー（開発版）</title>
-<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon-180.png">
+<link rel="apple-touch-icon-precomposed" href="../icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="180x180" href="../icons/apple-touch-icon-180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
-<link rel="icon" href="../icons/favicon.ico" sizes="any">
+<link rel="shortcut icon" href="../icons/favicon.ico">
 <meta name="theme-color" content="#2ba6d4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -134,7 +136,9 @@
   .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
   .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative;overflow:hidden;cursor:pointer}
   .scell:active{transform:scale(.95)}
-  .scell .nm{font-size:15px;font-weight:800}
+  .scell .nm{font-size:15px;font-weight:800;white-space:nowrap;max-width:98%}
+  .scell .nm.sm{font-size:12px}
+  .scell .nm.sm2{font-size:10px;letter-spacing:-.5px}
   /* 取得：色塗り＋緑の角リボン✓ */
   .scell.got{background:linear-gradient(150deg,#d9f2ff,#fff);border-color:var(--aqua-400)}
   .scell.got .nm{color:var(--aqua-700)}
@@ -777,7 +781,8 @@ function drawStaffGrid(){
     html+='<div class="scell'+(s.collected?' got':' no')+(kc?' '+kc:'')+(s.todayLoc?' here':'')+'" onclick="staffModal('+i+')">'
       +(kl?'<span class="kb">'+kl+'</span>':'')
       +(s.collected?'<span class="ck">✓</span>':'')
-      +'<span class="nm">'+esc(s.name).slice(0,2)+'</span>'
+      +(s.secret?'<span style="position:absolute;top:2px;right:5px;font-size:11px">🔒</span>':'')
+      +'<span class="nm'+(s.name.length>=4?' sm2':(s.name.length===3?' sm':''))+'">'+esc(s.name)+'</span>'
       +(s.todayLoc?'<span class="loc">'+esc(s.todayLoc)+'</span>':'')
       +'</div>';
   });
@@ -785,6 +790,15 @@ function drawStaffGrid(){
 }
 function staffModal(i){
   var s=staffCache[i]; if(!s) return;
+  if(s.secret){ // シークレット（未取得）：正体を伏せる
+    var sm=document.createElement('div'); sm.className='modal';
+    sm.innerHTML='<div class="box"><div class="emoji">🔒</div><h3>シークレット</h3>'
+      +'<div class="sbadge" style="margin:6px auto">？</div>'
+      +'<div class="hint" style="margin:12px 0 2px">このスタッフはシークレットです。<br>スタンプを取ると、名前とプロフィールが公開されます。</div>'
+      +'<button class="btn" onclick="this.closest(\'.modal\').remove()">とじる</button></div>';
+    sm.onclick=function(e){if(e.target===sm)sm.remove();};
+    document.body.appendChild(sm); return;
+  }
   function row(lbl,val){ return val ? '<div class="drow"><span class="dl">'+lbl+'</span><span class="dv">'+esc(val)+'</span></div>' : ''; }
   var kubunBadge = s.kubun ? '<span class="kt '+kubunCls(s.kubun)+'" style="margin-left:6px">'+esc(s.kubun)+'</span>' : '';
   var detail = row('区分',s.kubun)+row('大学',s.university)+row('学部',s.faculty)+row('担当科目',s.subject);
@@ -831,7 +845,7 @@ function renderSchedule(list){
     groups[g].forEach(function(s){
       html+='<div class="sperson'+(s.collected?' got':'')+'">'
         +'<div class="av">'+esc(s.name).slice(0,2)+'</div>'
-        +'<div class="pn">'+esc(s.name)+'</div>'
+        +'<div class="pn">'+esc(s.name)+(s.secret?' 🔒':'')+'</div>'
         +(s.kubun?'<span class="kt '+kubunCls(s.kubun)+'">'+esc(s.kubun)+'</span>':'')
         +'<div class="mk'+(s.collected?'':' no')+'">'+(s.collected?'✓ 取得済み':'未取得')+'</div>'
         +'</div>';
