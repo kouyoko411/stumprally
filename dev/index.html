@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>スタンプラリー（開発版）</title>
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
+<link rel="icon" href="../icons/favicon.ico" sizes="any">
+<meta name="theme-color" content="#2ba6d4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="スタンプ開発版">
+<style>
+  :root{
+    --aqua-50:#f0fbff; --aqua-100:#e0f6ff; --aqua-200:#c2ecfb;
+    --aqua-300:#9adcf3; --aqua-400:#5cc4e8; --aqua-500:#2ba6d4;
+    --aqua-600:#1b87b5; --aqua-700:#166b91; --ink:#0f3a4a;
+    --ink-soft:#4a7285; --white:#ffffff; --danger:#e2556b; --gold:#f2b705;
+    --shadow:0 8px 28px rgba(27,135,181,.16);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
+    color:var(--ink);background:linear-gradient(160deg,#eafaff 0%,#d5f1fb 45%,#c2ecfb 100%);min-height:100vh}
+  .app{max-width:440px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative}
+  .topbar{padding:18px 20px 14px;display:flex;align-items:center;gap:10px;
+    background:linear-gradient(120deg,var(--aqua-500),var(--aqua-400));color:#fff;box-shadow:var(--shadow);
+    position:sticky;top:0;z-index:5;border-bottom-left-radius:22px;border-bottom-right-radius:22px}
+  .topbar .logo{font-size:26px}
+  .topbar h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.02em}
+  .topbar .sub{font-size:11px;opacity:.9;margin-top:1px}
+  .me{margin-left:auto;text-align:right;font-size:11px;line-height:1.4}
+  .me b{font-size:14px}
+  .topacts{margin-left:auto;display:flex;gap:8px}
+  .iconbtn{width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .iconbtn:active{background:rgba(255,255,255,.34)}
+  .appmenu{position:absolute;top:calc(100% - 4px);right:12px;background:#fff;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--aqua-100);overflow:hidden;min-width:180px;z-index:12}
+  .appmenu .mhead{padding:10px 16px;font-size:12px;color:var(--ink-soft);border-bottom:1px solid var(--aqua-100);background:var(--aqua-50)}
+  .appmenu .mhead b{color:var(--aqua-700);font-size:14px}
+  .appmenu button{display:flex;align-items:center;gap:10px;width:100%;border:none;background:none;padding:13px 16px;font-size:14px;color:var(--ink);text-align:left;cursor:pointer;font-weight:600}
+  .appmenu button + button{border-top:1px solid var(--aqua-100)}
+  .appmenu button:active{background:var(--aqua-50)}
+  .appmenu button .mi{font-size:18px}
+  .content{flex:1;padding:18px 18px 96px}
+  .card{background:var(--white);border-radius:20px;padding:22px;box-shadow:var(--shadow);border:1px solid var(--aqua-100)}
+  .card + .card{margin-top:16px}
+  h2{font-size:16px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px}
+  input[type=text],input[type=tel],input[type=number],select{width:100%;padding:14px;border:2px solid var(--aqua-200);border-radius:14px;font-size:17px;color:var(--ink);background:var(--aqua-50);transition:.15s}
+  input:focus,select:focus{outline:none;border-color:var(--aqua-400);background:#fff;box-shadow:0 0 0 4px rgba(92,196,232,.18)}
+  .btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(120deg,var(--aqua-500),var(--aqua-600));box-shadow:0 6px 16px rgba(27,135,181,.3);cursor:pointer;margin-top:6px;transition:.12s}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5}
+  .btn.ghost{background:#fff;color:var(--aqua-600);border:2px solid var(--aqua-300);box-shadow:none}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+  .err{color:var(--danger);font-size:13px;margin-top:8px;font-weight:600;min-height:18px}
+  .stats{display:flex;gap:12px;margin-bottom:16px}
+  .stat{flex:1;background:linear-gradient(150deg,var(--aqua-100),var(--aqua-50));border-radius:18px;padding:16px 12px;text-align:center;border:1px solid var(--aqua-200)}
+  .stat .num{font-size:30px;font-weight:800;color:var(--aqua-600);line-height:1}
+  .stat .lbl{font-size:11px;color:var(--ink-soft);margin-top:6px}
+  .progress{height:10px;background:var(--aqua-100);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--aqua-400),var(--aqua-500));border-radius:99px;transition:width .4s}
+  #reader{border-radius:16px;overflow:hidden;border:2px solid var(--aqua-200)}
+  .tabs{display:flex;background:var(--aqua-100);border-radius:14px;padding:4px;margin-bottom:14px}
+  .tabs button{flex:1;padding:10px;border:none;background:transparent;border-radius:11px;font-weight:700;color:var(--ink-soft);font-size:14px}
+  .tabs button.on{background:#fff;color:var(--aqua-600);box-shadow:0 2px 6px rgba(27,135,181,.15)}
+  .subtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+  .subtabs button{padding:6px 14px;border-radius:99px;border:2px solid var(--aqua-200);background:#fff;font-size:13px;color:var(--aqua-700);font-weight:600}
+  .subtabs button.on{background:var(--aqua-500);color:#fff;border-color:var(--aqua-500)}
+  .rank{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--aqua-100)}
+  .rank .pos{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:var(--aqua-100);color:var(--aqua-700);font-size:14px;flex-shrink:0}
+  .rank.me{background:var(--aqua-50);border-radius:14px;border-bottom:none}
+  .rank.me .id{color:var(--aqua-600);font-weight:800}
+  .pos.g1{background:linear-gradient(135deg,#ffe066,#f2b705);color:#5a4500}
+  .pos.g2{background:linear-gradient(135deg,#e3ebef,#b8c6cd);color:#3d4a50}
+  .pos.g3{background:linear-gradient(135deg,#f0c9a0,#cf9b6b);color:#5a3a1e}
+  .rank .id{flex:1;font-size:15px;font-variant-numeric:tabular-nums}
+  .rank .pt{font-weight:800;color:var(--aqua-600);font-size:15px}
+  .rank .pt span{font-size:11px;color:var(--ink-soft);font-weight:600}
+  .rankrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 6px}
+  .rankhead{font-size:13px;font-weight:800;color:var(--aqua-700)}
+  .rank-refresh{border:1px solid var(--aqua-200);background:var(--aqua-50);color:var(--aqua-700);
+    font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px;flex-shrink:0;cursor:pointer}
+  .rank-refresh:active{background:var(--aqua-100)}
+  .more-link{text-align:center;padding:10px 0;color:var(--aqua-600);font-size:13px;font-weight:700;cursor:pointer}
+  .me-card{background:linear-gradient(135deg,var(--aqua-500),var(--aqua-600));border-radius:18px;padding:16px 18px;color:#fff;margin-top:14px;box-shadow:0 10px 22px rgba(27,135,181,.35)}
+  .me-card .lbl{font-size:11px;opacity:.85;margin-bottom:6px}
+  .me-card .big{display:flex;align-items:baseline;gap:6px}
+  .me-card .big .num{font-size:30px;font-weight:900}
+  .me-card .big .unit{font-size:13px;opacity:.9}
+  .around{background:rgba(255,255,255,.14);border-radius:12px;margin-top:12px;padding:4px 10px}
+  .around .rank{border-bottom:1px solid rgba(255,255,255,.18);padding:8px 2px}
+  .around .rank:last-child{border-bottom:none}
+  .around .pos{background:rgba(255,255,255,.25);color:#fff}
+  .around .id{color:#fff}
+  .around .pt{color:#fff}
+  .around .pt span{color:rgba(255,255,255,.75)}
+  .around .rank.me{background:rgba(255,255,255,.22);border-radius:10px}
+  .around .rank.me .id::after{content:" (あなた)";font-size:10.5px;opacity:.85;font-weight:600}
+  .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);display:flex;border-top:1px solid var(--aqua-100);z-index:8}
+  .nav button{flex:1;border:none;background:none;padding:9px 0 12px;font-size:11px;color:var(--ink-soft);font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .nav button .ic{font-size:22px}
+  .nav button.on{color:var(--aqua-600)}
+  .hidden{display:none!important}
+  .badge{display:inline-block;padding:3px 10px;border-radius:99px;background:var(--aqua-100);color:var(--aqua-700);font-size:12px;font-weight:700}
+  .modal{position:fixed;inset:0;background:rgba(9,40,52,.45);display:flex;align-items:center;justify-content:center;padding:24px;z-index:20}
+  .modal .box{background:#fff;border-radius:24px;padding:28px 24px;text-align:center;max-width:340px;width:100%;box-shadow:var(--shadow);animation:pop .3s cubic-bezier(.2,1.3,.5,1)}
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal .emoji{font-size:54px}
+  .modal h3{margin:8px 0 4px;font-size:20px}
+  .modal .big{font-size:40px;font-weight:800;color:var(--aqua-600);margin:6px 0}
+  .modal .bonus{margin:10px 0;padding:10px;background:linear-gradient(120deg,#fff6d6,#ffe9a8);border-radius:14px;color:#7a5c00;font-weight:700;font-size:14px}
+  .spin{display:inline-block;width:18px;height:18px;border:3px solid var(--aqua-200);border-top-color:var(--aqua-500);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .daishi-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .daishi-head button{border:2px solid var(--aqua-200);background:#fff;color:var(--aqua-600);border-radius:10px;width:36px;height:36px;font-size:18px;font-weight:800}
+  .daishi-head .mon{font-weight:800;font-size:16px;color:var(--ink)}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .dow{text-align:center;font-size:11px;color:var(--ink-soft);font-weight:700;padding:2px 0}
+  .cal .cell{aspect-ratio:1;border:1px solid var(--aqua-100);border-radius:8px;background:var(--aqua-50);padding:2px;position:relative;overflow:hidden}
+  .cal .cell.empty{background:transparent;border:none}
+  .cal .cell .dnum{position:absolute;top:1px;left:3px;font-size:9px;color:var(--ink-soft);font-weight:700}
+  .cal .cell.today{border-color:var(--aqua-400);box-shadow:0 0 0 2px rgba(92,196,232,.3) inset}
+  .cal .marks{position:absolute;inset:11px 1px 1px;display:flex;flex-wrap:wrap;gap:1px;align-content:flex-start;justify-content:center}
+  .hanko{width:15px;height:15px;border-radius:50%;border:1.5px solid #e2556b;color:#e2556b;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;background:rgba(226,85,107,.06);line-height:1}
+  .hanko.more{border-color:var(--aqua-500);color:var(--aqua-600);background:rgba(43,166,212,.08)}
+  .gridwrap{margin-top:6px}
+  .grow{display:flex;align-items:center;gap:3px;margin-bottom:3px}
+  .gcells{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;flex:1}
+  .gcell{aspect-ratio:1;border:1px dashed var(--aqua-200);border-radius:6px;background:var(--aqua-50);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--ink-soft)}
+  .gcell.on{border-style:solid;border-color:var(--aqua-400);background:#fff;color:var(--aqua-600)}
+  .gtotal{width:30px;text-align:right;font-size:11px;font-weight:800;color:var(--aqua-600)}
+  .staffgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+  .scell{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid var(--aqua-100);background:var(--aqua-50);color:var(--ink-soft);position:relative;overflow:hidden;cursor:pointer}
+  .scell:active{transform:scale(.95)}
+  .scell .nm{font-size:15px;font-weight:800}
+  /* 取得：色塗り＋緑の角リボン✓ */
+  .scell.got{background:linear-gradient(150deg,#d9f2ff,#fff);border-color:var(--aqua-400)}
+  .scell.got .nm{color:var(--aqua-700)}
+  .scell .ck{display:none}
+  .scell.got .ck{display:flex;position:absolute;top:-2px;right:-2px;width:22px;height:22px;background:#2fae72;color:#fff;border-bottom-left-radius:12px;align-items:center;justify-content:center;font-size:12px;padding:2px 0 3px 3px}
+  /* 未取得：グレー破線 */
+  .scell.no{background:#eef1f3;border:2px dashed #c3ccd2}
+  .scell.no .nm{color:#aab4bb;opacity:.7}
+  .complete{text-align:center;font-weight:800;color:var(--aqua-600);margin:4px 0 2px;font-size:15px}
+  .sbadge{width:56px;height:56px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;border:2px solid var(--aqua-200);background:var(--aqua-50);color:var(--ink-soft)}
+  .sbadge.got{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .drow{display:flex;justify-content:space-between;gap:12px;padding:9px 2px;border-bottom:1px solid var(--aqua-100);font-size:14px}
+  .drow .dl{color:var(--ink-soft);font-weight:700;flex-shrink:0}
+  .drow .dv{text-align:right;font-weight:600}
+  /* 文理区分：左帯の色＋左上の文/理 */
+  .scell.bunkei,.scell.no.bunkei{border-left:6px solid #f0a94e}
+  .scell.rikei,.scell.no.rikei{border-left:6px solid #4aa8e0}
+  .scell.shain,.scell.no.shain{border-left:6px solid #8a7cd8}
+  .scell .kb{position:absolute;top:2px;left:4px;font-size:9px;font-weight:800}
+  .scell.bunkei .kb{color:#e08a2b}
+  .scell.rikei .kb{color:#2b8fd4}
+  .scell.shain .kb{color:#6a5bc4}
+  /* 本日配置：下部の西口/東口ピルのみ（強調なし） */
+  .scell.here{padding-bottom:6px}
+  .scell .loc{position:absolute;bottom:0;left:0;right:0;background:var(--aqua-600);color:#fff;font-size:9px;font-weight:800;text-align:center;line-height:1.6}
+  /* 会えるスタッフ（配置） */
+  .gate{margin-top:8px}
+  .gate .gh{font-weight:800;font-size:14px;color:var(--aqua-700);margin:8px 0 4px;display:flex;align-items:center;gap:6px}
+  .gate .gh .pin{background:var(--aqua-100);border-radius:8px;padding:1px 8px;font-size:12px}
+  .sperson{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--aqua-100)}
+  .sperson .av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--aqua-50);border:2px solid var(--aqua-200);color:var(--ink-soft);flex-shrink:0}
+  .sperson.got .av{background:linear-gradient(150deg,var(--aqua-100),#fff);border-color:var(--aqua-400);color:var(--aqua-700)}
+  .sperson .pn{flex:1;font-size:14px;font-weight:600}
+  .sperson .kt{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px}
+  .kt.bunkei{background:#fde7d3;color:#c9761b}
+  .kt.rikei{background:#dceffb;color:#1f7fbe}
+  .kt.shain{background:#e7e3fa;color:#5a4bb0}
+  .kt{background:#eef1f3;color:#5f6d75}
+  .sperson .mk{font-size:12px;font-weight:800;color:var(--aqua-600)}
+  .sperson .mk.no{color:var(--ink-soft);opacity:.6}
+  /* ルール・使い方 */
+  .rule-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--aqua-100)}
+  .rule-item:last-child{border-bottom:none}
+  .rule-item .ic{font-size:22px;flex-shrink:0;width:34px;text-align:center}
+  .rule-item .txt b{display:block;font-size:14px;margin-bottom:2px}
+  .rule-item .txt span{font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .overlay{position:fixed;inset:0;background:rgba(9,40,52,.5);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+  .sheet{background:#fff;width:100%;max-width:440px;border-radius:24px 24px 0 0;padding:26px 22px 22px;max-height:85vh;overflow-y:auto;animation:up .3s cubic-bezier(.2,1,.4,1)}
+  @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .sheet-head{text-align:center;margin-bottom:16px}
+  .sheet-head .emoji{font-size:40px}
+  .sheet-head h3{margin:6px 0 2px;font-size:19px}
+  .sheet-head p{margin:0;font-size:12.5px;color:var(--ink-soft)}
+  /* ===== 開発版だとひと目で分かるバッジ ===== */
+  .devbadge{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:50;
+    background:#e2556b;color:#fff;font-size:11px;font-weight:800;letter-spacing:.05em;
+    padding:3px 12px;border-radius:99px;box-shadow:0 3px 10px rgba(0,0,0,.2);pointer-events:none}
+</style>
+</head>
+<body>
+<div class="devbadge">🛠 開発版 DEV</div>
+<div class="app">
+  <div class="topbar">
+    <span class="logo">❄️</span>
+    <div><h1>スタンプラリー</h1><div class="sub">多くのスタッフに話しかけよう！</div></div>
+    <div class="topacts hidden" id="topacts">
+      <button class="iconbtn" id="btnScan" onclick="go('scScan')" aria-label="QRコードを読み取る">📸</button>
+      <button class="iconbtn" id="btnMenu" onclick="toggleMenu()" aria-label="メニュー">☰</button>
+    </div>
+    <div class="appmenu hidden" id="appmenu">
+      <div class="mhead">生徒番号　<b id="meId">—</b></div>
+      <button onclick="closeMenu();go('scRules')"><span class="mi">📘</span>ルールを見る</button>
+      <button onclick="closeMenu();confirmLogout()"><span class="mi">🚪</span>ログアウト</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- ログイン -->
+    <section id="scLogin">
+      <div class="card">
+        <h2>🔑 ログイン</h2>
+        <label>生徒番号（7〜8桁の数字）</label>
+        <input type="tel" id="loginId" inputmode="numeric" placeholder="例：12345678" maxlength="8">
+        <div class="err" id="loginErr"></div>
+        <button class="btn" id="loginBtn" onclick="doLogin()">はじめる</button>
+        <div class="hint">※ 氏名などの個人情報は登録・表示されません。</div>
+      </div>
+    </section>
+    <!-- ホーム -->
+    <section id="scHome" class="hidden">
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="num" id="hPts">0</div><div class="lbl">合計ポイント</div></div>
+          <div class="stat"><div class="num" id="hStaff">0</div><div class="lbl">出会ったスタッフ</div></div>
+        </div>
+        <label>次のボーナスまで（5人ごとに +3pt）</label>
+        <div class="progress"><i id="hBar" style="width:0%"></i></div>
+        <div class="hint" id="hBonusMsg"></div>
+      </div>
+      <div class="card">
+        <h2>📸 スタンプを集める</h2>
+        <div class="hint" style="margin-top:0">スタッフの名札のQRを読み取り、今日受けた授業数（0〜10）を申告してください。<br>その日最初の読み取りで<b>登校ポイント+1</b>。0（自習）は1日1回まで。</div>
+        <button class="btn" onclick="go('scScan')">QRコードを読み取る</button>
+      </div>
+    </section>
+    <!-- QRスキャン -->
+    <section id="scScan" class="hidden">
+      <div class="card">
+        <h2>📸 QRコード読み取り</h2>
+        <div id="reader"></div>
+        <div class="err" id="scanErr"></div>
+        <div class="hint">名札のQRコードをカメラに向けてください。読み取れない場合はスタッフにお知らせください。</div>
+        <button class="btn ghost" onclick="go('scHome')">もどる</button>
+      </div>
+    </section>
+    <!-- スタンプ台紙 -->
+    <section id="scDaishi" class="hidden">
+      <div class="card">
+        <h2>📖 スタンプ台紙</h2>
+        <div class="daishi-head">
+          <button onclick="calMove(-1)">‹</button>
+          <div class="mon" id="calMon">—</div>
+          <button onclick="calMove(1)">›</button>
+        </div>
+        <div class="cal" id="calGrid"></div>
+        <div class="hint">その日に交流したスタッフのハンコが並びます。</div>
+      </div>
+      <div class="card">
+        <h2>🧮 受講スタンプ（通算）</h2>
+        <div class="gridwrap" id="gridWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">受講1コマにつき1マス、申告のたびに左上から順に押されます。</div>
+      </div>
+    </section>
+    <!-- スタッフ -->
+    <section id="scStaff" class="hidden">
+      <div class="card">
+        <h2>🎯 スタッフ収集状況</h2>
+        <div class="complete" id="completeMsg">—</div>
+        <div class="subtabs" id="kubunTabs">
+          <button class="on" onclick="kubunFilter('all',this)">全体</button>
+          <button onclick="kubunFilter('文系',this)">文系</button>
+          <button onclick="kubunFilter('理系',this)">理系</button>
+        </div>
+        <div class="staffgrid" id="staffGrid"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">緑✓＝取得済み／グレー破線＝未取得。左帯：<b style="color:#e08a2b">文系</b>／<b style="color:#2b8fd4">理系</b>。下の「西口/東口」は本日いる場所。タップで詳細。</div>
+      </div>
+      <div class="card">
+        <h2>📅 会えるスタッフ</h2>
+        <div class="daishi-head">
+          <button onclick="schedMove(-1)">‹</button>
+          <div class="mon" id="schDate">—</div>
+          <button onclick="schedMove(1)">›</button>
+        </div>
+        <div id="schedWrap"><div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div></div>
+        <div class="hint">✓＝取得済み。まだ話していない人に話しかけに行こう！</div>
+      </div>
+    </section>
+    <!-- ランキング -->
+    <section id="scRank" class="hidden">
+      <div class="card">
+        <h2>🏆 ランキング</h2>
+        <div class="tabs">
+          <button id="tAll" class="on" onclick="rankTab('all')">全体</button>
+          <button id="tGrade" onclick="rankTab('grade')">学年別</button>
+        </div>
+        <div class="subtabs hidden" id="gradeTabs"></div>
+        <div class="rankrow">
+          <div class="rankhead" id="rankHead">上位10名</div>
+          <button class="rank-refresh" id="rankRefresh" onclick="refreshRanking()">🔄 更新</button>
+        </div>
+        <div id="rankList"><div class="hint">読み込み中… <span class="spin"></span></div></div>
+        <div class="more-link hidden" id="moreLink" onclick="toggleAll()">すべてのランキングを見る ▾</div>
+        <div class="hint" id="rankMeta"></div>
+      </div>
+      <div class="me-card hidden" id="meCard">
+        <div class="lbl">あなたの順位</div>
+        <div class="big"><span class="num" id="meRankNum">—</span><span class="unit" id="meRankUnit"></span></div>
+        <div class="around" id="around"></div>
+      </div>
+    </section>
+    <!-- ルール・使い方 -->
+    <section id="scRules" class="hidden">
+      <div class="card">
+        <h2>📖 ルール・使い方</h2>
+        <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRコードを読み取ると、自動で+1ポイントがもらえます（スタッフは誰でもOK）。</span></div></div>
+        <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>スタッフの名札のQRコードを読み取り、その先生・スタッフの前で受けた授業数（0〜10）を入力すると、その数だけポイントがもらえます。複数コマ受けた日は複数人のスタッフからスタンプをもらうことができます。</span></div></div>
+        <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>自習の日（0コマ）について</b><span>授業を受けていない日は「0」を選べます。ただし「0」にできるのは1日1回までです。</span></div></div>
+        <div class="rule-item"><div class="ic">✏️</div><div class="txt"><b>定石演習について</b><span>定石演習は4問で、受講1コマと同じ扱いとして換算します。</span></div></div>
+        <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナスポイント</b><span>これまで話していない新しいスタッフ5人とのスタンプを集めるごとに、+3ポイントのボーナスがもらえます。</span></div></div>
+        <div class="rule-item"><div class="ic">📖</div><div class="txt"><b>スタンプ台紙の見方</b><span>カレンダーには「いつ誰と交流したか」、升目には「これまでの受講スタンプ」</span></div></div>
+        <div class="rule-item"><div class="ic">👥</div><div class="txt"><b>スタッフ</b><span>収集状況には「会ったスタッフ」が記録されます。その日いるスタッフを東口／西口に分けて確認できます。</span></div></div>
+        <div class="rule-item"><div class="ic">🏆</div><div class="txt"><b>ランキング</b><span>全体・学年別（高0／高1／高2）をいつでも確認できます。同じポイントの人は同じ順位です。</span></div></div>
+        <button class="btn ghost" style="margin-top:14px" onclick="showWelcome()">▶ ようこそ画面をもう一度見る</button>
+      </div>
+    </section>
+  </div>
+  <div class="nav hidden" id="nav">
+    <button id="nHome" class="on" onclick="go('scHome')"><span class="ic">🏠</span>ホーム</button>
+    <button id="nDaishi" onclick="go('scDaishi')"><span class="ic">📖</span>台紙</button>
+    <button id="nStaff" onclick="go('scStaff')"><span class="ic">👥</span>スタッフ</button>
+    <button id="nRank" onclick="go('scRank')"><span class="ic">🏆</span>ランキング</button>
+  </div>
+</div>
+<!-- 初回ログイン時のようこそシート -->
+<div class="overlay hidden" id="welcome">
+  <div class="sheet">
+    <div class="sheet-head"><div class="emoji">❄️</div><h3>ようこそ！</h3><p>はじめに、スタンプの集め方とルールを確認しましょう</p></div>
+    <div class="rule-item"><div class="ic">🏫</div><div class="txt"><b>登校ポイント</b><span>その日はじめてQRを読み取ると、自動で+1ポイント。</span></div></div>
+    <div class="rule-item"><div class="ic">📸</div><div class="txt"><b>スタンプの集め方</b><span>QRを読み取り、受けた授業数（0〜10）を入力するとポイント獲得。</span></div></div>
+    <div class="rule-item"><div class="ic">🌱</div><div class="txt"><b>0コマ申告は1日1回まで</b><span>自習の日は「0」を選べますが、1日1回だけです。</span></div></div>
+    <div class="rule-item"><div class="ic">🎉</div><div class="txt"><b>ボーナス</b><span>違うスタッフ5人ごとに+3ポイント。</span></div></div>
+    <button class="btn" style="margin-top:16px" onclick="hideWelcome()">はじめる</button>
+  </div>
+</div>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+/* ====================================================================
+ *  【開発版】設定：バックエンドは本番と同じ GAS_URL を指しています。
+ *  データ（スプレッドシート）を分けたくなったら、下の GAS_URL だけ
+ *  テスト用GASの /exec URL に差し替えてください。
+ * ==================================================================== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbwxA0SMa4kK41IB8QXR4-HY7wH0Tr_-E_FYNFxjzbkiI61rKHSTpkSZDvgYfnYgg3ywew/exec';
+/* ==================================================================== */
+var me=null, meGrade=null, rankMode='all', rankGrade=null, qr=null, scanning=false, lastScanAt=0, busy=false;
+/* ---- GAS API 呼び出し（CORS回避：text/plainの単純リクエスト） ---- */
+function api(action, payload){
+  var body = Object.assign({action:action}, payload||{});
+  return fetch(GAS_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(body)
+  }).then(function(r){ return r.json(); });
+}
+/* ---- セッション保持（sessionStorage：仕様2.1 初期実装） ---- */
+function saveSession(id,grade){ try{sessionStorage.setItem('sr_id',id);sessionStorage.setItem('sr_grade',grade||'');}catch(e){} }
+function clearSession(){ try{sessionStorage.removeItem('sr_id');sessionStorage.removeItem('sr_grade');}catch(e){} }
+window.addEventListener('load',function(){
+  var id=null; try{id=sessionStorage.getItem('sr_id');}catch(e){}
+  if(id){ me=id; meGrade=sessionStorage.getItem('sr_grade'); enterApp(); refreshHome(); }
+});
+/* ---- ログイン ---- */
+function doLogin(){
+  var v=document.getElementById('loginId').value.trim();
+  var e=document.getElementById('loginErr');
+  if(!/^[0-9]+$/.test(v)){e.textContent='数字のみで入力してください（全角・記号は不可）';return;}
+  if(v.length<7||v.length>8){e.textContent='生徒番号は7〜8桁で入力してください';return;}
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.innerHTML='確認中… <span class="spin"></span>'; e.textContent='';
+  api('login',{studentId:v}).then(function(r){
+    btn.disabled=false; btn.textContent='はじめる';
+    if(!r.ok){ e.textContent=r.msg; return; }
+    me=r.studentId; meGrade=r.grade; saveSession(me,meGrade); enterApp(r.summary);
+  }).catch(function(){
+    btn.disabled=false; btn.textContent='はじめる'; e.textContent='通信エラー。もう一度お試しください。';
+  });
+}
+function enterApp(summary){
+  histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュを初期化
+  rankCacheData=null; rankCacheKey=null; rankDirty=true; // ランキングキャッシュを初期化
+  document.getElementById('scLogin').classList.add('hidden');
+  document.getElementById('nav').classList.remove('hidden');
+  document.getElementById('topacts').classList.remove('hidden');
+  document.getElementById('meId').textContent=me;
+  if(summary) applySummary(summary);
+  go('scHome');
+  maybeShowWelcome();
+}
+/* ---- 右上メニュー（ルール／ログアウト） ---- */
+function toggleMenu(){ var m=document.getElementById('appmenu'); if(m.classList.contains('hidden')) openMenu(); else closeMenu(); }
+function outsideMenu(e){ var m=document.getElementById('appmenu'), b=document.getElementById('btnMenu'); if(!m.contains(e.target) && !b.contains(e.target)) closeMenu(); }
+function openMenu(){ document.getElementById('appmenu').classList.remove('hidden'); setTimeout(function(){document.addEventListener('click',outsideMenu);},0); }
+function closeMenu(){ document.getElementById('appmenu').classList.add('hidden'); document.removeEventListener('click',outsideMenu); }
+function logout(){
+  stopScan(); clearSession(); closeMenu(); me=null;
+  histData=null; histDirty=true; calYear=null; calMonth=null; // 履歴キャッシュをクリア
+  rankCacheData=null; rankCacheKey=null; rankDirty=true; // ランキングキャッシュをクリア
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('nav').classList.add('hidden');
+  document.getElementById('topacts').classList.add('hidden');
+  ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById('scLogin').classList.remove('hidden');
+  document.getElementById('loginId').value='';
+}
+/* ---- 画面遷移 ---- */
+function go(id){
+  ['scHome','scScan','scDaishi','scStaff','scRank','scRules'].forEach(function(s){document.getElementById(s).classList.add('hidden');});
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('#nav button').forEach(function(b){b.classList.remove('on');});
+  var map={scHome:'nHome',scDaishi:'nDaishi',scStaff:'nStaff',scRank:'nRank'};
+  if(map[id]) document.getElementById(map[id]).classList.add('on');
+  if(id==='scScan') startScan(); else stopScan();
+  if(id==='scHome') refreshHome();
+  if(id==='scDaishi') loadDaishi();
+  if(id==='scStaff') loadStaff();
+  if(id==='scRank') loadRanking();
+}
+/* ---- ルール：ようこそシート＆初回自動表示 ---- */
+function showWelcome(){ document.getElementById('welcome').classList.remove('hidden'); }
+function hideWelcome(){ document.getElementById('welcome').classList.add('hidden'); try{localStorage.setItem('sr_rules_seen','1');}catch(e){} }
+function maybeShowWelcome(){ try{ if(!localStorage.getItem('sr_rules_seen')) showWelcome(); }catch(e){} }
+/* ---- ログアウト確認 ---- */
+function confirmLogout(){
+  var m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="box"><div class="emoji">🚪</div><h3>ログアウトしますか？</h3>'
+    +'<div class="hint" style="margin:8px 0 2px">次回は生徒番号の入力が必要です。</div>'
+    +'<button class="btn" id="loOk">ログアウトする</button>'
+    +'<button class="btn ghost" id="loCancel">キャンセル</button></div>';
+  document.body.appendChild(m);
+  document.getElementById('loOk').onclick=function(){ m.remove(); logout(); };
+  document.getElementById('loCancel').onclick=function(){ m.remove(); };
+  m.onclick=function(e){ if(e.target===m) m.remove(); };
+}
+/* ---- ホーム ---- */
+function refreshHome(){ api('summary',{studentId:me}).then(applySummary).catch(function(){}); }
+function applySummary(s){
+  if(!s) return;
+  document.getElementById('hPts').textContent=s.points;
+  document.getElementById('hStaff').textContent=s.staffCount;
+  var within=s.staffCount%5;
+  document.getElementById('hBar').style.width=(within/5*100)+'%';
+  document.getElementById('hBonusMsg').textContent='あと '+s.needForBonus+' 人のスタッフと交流すると +3pt ボーナス！（累計 '+s.staffCount+' 人）';
+}
+/* ---- QRスキャン（カメラ） ---- */
+/* ===== QR読み取り（元の同期的な形。ライブラリはCDNから読込済み） =====
+ * getUserMedia は必ず「画面遷移＝タップ操作」の同期の流れの中で呼ぶ。
+ * 非同期(Promise/コールバック)で包むと iOS Safari が許可プロンプトを出さないため。*/
+function startScan(){
+  if(scanning) return;
+  var errEl=document.getElementById('scanErr'); errEl.textContent='';
+  if(typeof Html5Qrcode==='undefined'){
+    errEl.textContent='読み取り機能を読み込めませんでした。ページを再読み込みしてください。';
+    return;
+  }
+  try{ qr=new Html5Qrcode("reader"); }
+  catch(e){ errEl.textContent='読み取りの初期化に失敗しました。ページを再読み込みしてください。'; return; }
+  scanning=true;
+  qr.start({facingMode:"environment"},{fps:10,qrbox:{width:220,height:220}},onScan,function(){})
+    .catch(function(err){
+      scanning=false;
+      var nm=(err&&err.name)||'';
+      var extra = nm==='NotAllowedError' ? '　→ 設定＞Safari＞カメラ で「許可」にしてください。'
+                : nm==='NotReadableError' ? '　→ 他のアプリがカメラを使用中かもしれません。' : '';
+      errEl.textContent='カメラを起動できませんでした（'+nm+'）。ブラウザのカメラ使用を「許可」にしてください。'+extra;
+    });
+}
+function stopScan(){
+  if(qr && scanning){ scanning=false; qr.stop().then(function(){ try{qr.clear();}catch(e){} }).catch(function(){}); }
+}
+function onScan(text){
+  var now=Date.now();
+  if(busy || now-lastScanAt<2500) return;
+  lastScanAt=now; stopScan();
+  var t=text.trim();
+  // イベントQR（例：event:englishcamp）は授業数入力なしで直接付与
+  if(/^event:/i.test(t)){ claimEventScan(t.replace(/^event:/i,'')); return; }
+  askLessons(t);
+}
+function claimEventScan(eventId){
+  busy=true;
+  api('event',{studentId:me, event:eventId}).then(function(r){
+    busy=false;
+    if(!r.ok){ resultModal(r.alreadyEvent?'🔁':'⚠️', r.alreadyEvent?'受け取り済み':'エラー', r.msg||'付与に失敗しました', null, null); return; }
+    rankDirty=true; // イベントで加点されたのでランキングを次回再取得
+    resultModal('🎪', (r.eventName||'イベント')+' 出席！', '+'+r.added+' pt', null, 'イベントポイントを獲得しました');
+    applySummary(r.summary);
+  }).catch(function(){ busy=false; resultModal('⚠️','通信エラー','もう一度お試しください',null,null); });
+}
+function askLessons(token, presetErr){
+  var box=document.createElement('div'); box.className='modal';
+  box.innerHTML='<div class="box"><div class="emoji">📸</div><h3>QRを読み取りました</h3>'
+    +'<div class="hint">今日その先生・スタッフの前で受けた授業数を入力してください（0〜10）<br>0＝授業ではなく自習等（1日1回まで）</div>'
+    +'<input type="number" id="lessonInput" min="0" max="10" value="1" style="margin:14px 0">'
+    +'<div class="err" id="lessonErr">'+(presetErr||'')+'</div>'
+    +'<button class="btn" id="lessonOk">スタンプを押す</button>'
+    +'<button class="btn ghost" id="lessonCancel">キャンセル</button></div>';
+  document.body.appendChild(box);
+  document.getElementById('lessonCancel').onclick=function(){ box.remove(); startScan(); };
+  document.getElementById('lessonOk').onclick=function(){
+    var n=parseInt(document.getElementById('lessonInput').value,10);
+    if(isNaN(n)||n<0||n>10){ document.getElementById('lessonErr').textContent='0〜10で入力してください'; return; }
+    var b=document.getElementById('lessonOk'); b.disabled=true; b.innerHTML='送信中… <span class="spin"></span>';
+    busy=true;
+    api('claim',{studentId:me, staffToken:token, lessons:n}).then(function(r){
+      busy=false;
+      if(!r.ok){
+        if(r.zeroLimit){ box.remove(); askLessons(token, r.msg); return; }
+        box.remove(); resultModal('⚠️','エラー', r.msg||'付与に失敗しました', null, null); return;
+      }
+      box.remove();
+      if(r.duplicate){ resultModal('🔁','読み取り済み', r.msg, null, null); applySummary(r.summary); return; }
+      histDirty=true; rankDirty=true; // スタンプ登録が成功したので履歴・ランキングを次回再取得
+      var total=(r.attend||0)+(r.added||0)+(r.bonus||0);
+      var parts=[]; if(r.attend)parts.push('登校 +'+r.attend); parts.push('受講 +'+r.added); if(r.bonus)parts.push('ボーナス +'+r.bonus);
+      resultModal('✨','スタンプ獲得！','+'+total+' pt',
+        (r.attend?'🏫 登校ポイント +'+r.attend:'')+(r.bonus?'　🎉 スタッフ '+r.staffCount+'人達成 +'+r.bonus:''),
+        parts.join('　/　'));
+      applySummary(r.summary);
+    }).catch(function(){
+      busy=false; box.remove(); resultModal('⚠️','通信エラー','もう一度お試しください', null, null);
+    });
+  };
+}
+function resultModal(emoji,title,big,bonus,sub){
+  var m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="box"><div class="emoji">'+emoji+'</div><h3>'+title+'</h3><div class="big">'+big+'</div>'
+    +(sub?'<div class="badge">'+sub+'</div>':'')+(bonus?'<div class="bonus">'+bonus+'</div>':'')
+    +'<button class="btn" id="rmOk">続けて読み取る</button>'
+    +'<button class="btn ghost" id="rmHome">ホームへ</button></div>';
+  document.body.appendChild(m);
+  document.getElementById('rmOk').onclick=function(){ m.remove(); go('scScan'); };
+  document.getElementById('rmHome').onclick=function(){ m.remove(); go('scHome'); };
+}
+/* ---- スタンプ台紙 ---- */
+var histData=null, histDirty=true, calYear=null, calMonth=null;
+/* history を一度取得したらキャッシュ。claim成功時に histDirty=true で次回だけ再取得 */
+function ensureHistory(callback){
+  if(histData && !histDirty){ callback(histData); return; }
+  api('history',{studentId:me}).then(function(h){
+    if(h && h.ok){ histData=h; histDirty=false; }
+    callback(h);
+  }).catch(function(){ callback(null); });
+}
+function loadDaishi(){
+  document.getElementById('gridWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  document.getElementById('calGrid').innerHTML='';
+  ensureHistory(function(h){
+    if(!h||!h.ok){ document.getElementById('gridWrap').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; return; }
+    if(calYear===null){
+      var last=h.stamps.length?h.stamps[h.stamps.length-1].date:null;
+      var d=last?new Date(last+'T00:00:00'):new Date();
+      calYear=d.getFullYear(); calMonth=d.getMonth();
+    }
+    renderCalendar(); renderGrid(h.grid);
+  });
+}
+/* ---- スタッフ（収集状況＋会えるスタッフ） ---- */
+function loadStaff(){
+  document.getElementById('staffGrid').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  ensureHistory(function(h){
+    if(!h||!h.ok){ document.getElementById('staffGrid').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; return; }
+    renderStaff(h);
+    schedDate = h.scheduleDate || todayStrLocal();
+    document.getElementById('schDate').textContent=schedLabel(schedDate);
+    renderSchedule(h.schedule||[]);
+  });
+}
+function calMove(delta){ calMonth+=delta; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+function pad2(n){return (n<10?'0':'')+n;}
+function renderCalendar(){
+  if(!histData) return;
+  document.getElementById('calMon').textContent=calYear+'年 '+(calMonth+1)+'月';
+  var byDate=histData.calendar||{};
+  var startDow=new Date(calYear,calMonth,1).getDay();
+  var days=new Date(calYear,calMonth+1,0).getDate();
+  var today=(function(){var t=new Date();return t.getFullYear()+'-'+pad2(t.getMonth()+1)+'-'+pad2(t.getDate());})();
+  var html='';
+  ['日','月','火','水','木','金','土'].forEach(function(d){html+='<div class="dow">'+d+'</div>';});
+  for(var i=0;i<startDow;i++) html+='<div class="cell empty"></div>';
+  for(var day=1;day<=days;day++){
+    var key=calYear+'-'+pad2(calMonth+1)+'-'+pad2(day);
+    var list=byDate[key]||[]; var marks='';
+    list.slice(0,3).forEach(function(s){
+      var rot=(Math.random()*24-12).toFixed(1);
+      marks+='<div class="hanko" style="transform:rotate('+rot+'deg)">'+esc(s.name).slice(0,2)+'</div>';
+    });
+    if(list.length>3) marks+='<div class="hanko more">+'+(list.length-3)+'</div>';
+    html+='<div class="cell'+(key===today?' today':'')+'"><span class="dnum">'+day+'</span><div class="marks">'+marks+'</div></div>';
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function renderGrid(grid){
+  grid=grid||[];
+  var rows=Math.max(1,Math.ceil(grid.length/10)),html='';
+  for(var r=0;r<rows;r++){
+    var cells='';
+    for(var c=0;c<10;c++){var idx=r*10+c; cells+= idx<grid.length ? '<div class="gcell on">'+esc(grid[idx]).slice(0,2)+'</div>' : '<div class="gcell"></div>';}
+    var cum=Math.min(grid.length,(r+1)*10), filled=Math.min(10,grid.length-r*10);
+    html+='<div class="grow"><div class="gcells">'+cells+'</div><div class="gtotal">'+(filled>0?cum:'')+'</div></div>';
+  }
+  document.getElementById('gridWrap').innerHTML=html+'<div class="hint" style="margin-top:4px">通算受講コマ数：<b>'+grid.length+'</b></div>';
+}
+var staffCache=[], kubunFilterVal='all';
+function kubunCls(k){ return k==='文系'?'bunkei':(k==='理系'?'rikei':(k==='社員'?'shain':'')); }
+function kbLetter(k){ return k==='文系'?'文':(k==='理系'?'理':(k==='社員'?'社':'')); }
+function kubunFilter(v,btn){
+  kubunFilterVal=v;
+  document.querySelectorAll('#kubunTabs button').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  drawStaffGrid();
+}
+function renderStaff(h){
+  staffCache=h.staff||[];
+  document.getElementById('completeMsg').textContent=(h.staffTotal||25)+'人中 '+h.collectedCount+'人 達成！';
+  drawStaffGrid();
+}
+function drawStaffGrid(){
+  var html='';
+  staffCache.forEach(function(s,i){
+    if(kubunFilterVal!=='all' && s.kubun!==kubunFilterVal) return;
+    var kc=kubunCls(s.kubun); var kl=kbLetter(s.kubun);
+    html+='<div class="scell'+(s.collected?' got':' no')+(kc?' '+kc:'')+(s.todayLoc?' here':'')+'" onclick="staffModal('+i+')">'
+      +(kl?'<span class="kb">'+kl+'</span>':'')
+      +(s.collected?'<span class="ck">✓</span>':'')
+      +'<span class="nm">'+esc(s.name).slice(0,2)+'</span>'
+      +(s.todayLoc?'<span class="loc">'+esc(s.todayLoc)+'</span>':'')
+      +'</div>';
+  });
+  document.getElementById('staffGrid').innerHTML=html||'<div class="hint">該当するスタッフがいません</div>';
+}
+function staffModal(i){
+  var s=staffCache[i]; if(!s) return;
+  function row(lbl,val){ return val ? '<div class="drow"><span class="dl">'+lbl+'</span><span class="dv">'+esc(val)+'</span></div>' : ''; }
+  var kubunBadge = s.kubun ? '<span class="kt '+kubunCls(s.kubun)+'" style="margin-left:6px">'+esc(s.kubun)+'</span>' : '';
+  var detail = row('区分',s.kubun)+row('大学',s.university)+row('学部',s.faculty)+row('担当科目',s.subject);
+  if(!detail) detail='<div class="drow"><span class="dl">プロフィール</span><span class="dv">情報は未登録です</span></div>';
+  var m=document.createElement('div'); m.className='modal';
+  m.innerHTML='<div class="box" style="text-align:left">'
+    +'<div style="text-align:center"><div class="sbadge '+(s.collected?'got':'')+(kubunCls(s.kubun)?' '+kubunCls(s.kubun):'')+'">'+esc(s.name).slice(0,2)+'</div>'
+    +'<h3 style="text-align:center;margin:10px 0 2px">'+(s.fullName?esc(s.fullName):esc(s.name))+kubunBadge+'</h3>'
+    +'<div class="badge" style="margin-bottom:6px">'+(s.collected?'✓ 取得済み':'まだ会えていません')+'</div></div>'
+    +detail
+    +row('本日の配置',s.todayLoc?s.todayLoc:'本日は不在')
+    +'<button class="btn" style="margin-top:16px" onclick="this.closest(\'.modal\').remove()">とじる</button></div>';
+  m.onclick=function(e){if(e.target===m)m.remove();};
+  document.body.appendChild(m);
+}
+/* ---- 会えるスタッフ（配置・日付切替） ---- */
+var schedDate=null;
+function fmtDate(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function schedMove(delta){
+  var d=new Date(schedDate+'T00:00:00'); d.setDate(d.getDate()+delta); schedDate=fmtDate(d); loadSchedule();
+}
+function loadSchedule(){
+  document.getElementById('schDate').textContent=schedLabel(schedDate);
+  document.getElementById('schedWrap').innerHTML='<div class="hint" style="margin:0">読み込み中… <span class="spin"></span></div>';
+  api('schedule',{studentId:me, date:schedDate}).then(function(r){
+    renderSchedule((r&&r.schedule)||[]);
+  }).catch(function(){ document.getElementById('schedWrap').innerHTML='<div class="err">読み込みに失敗しました</div>'; });
+}
+function schedLabel(ds){
+  var t=todayStrLocal();
+  return ds+(ds===t?'（今日）':'');
+}
+function todayStrLocal(){var t=new Date();return fmtDate(t);}
+function renderSchedule(list){
+  if(!list.length){ document.getElementById('schedWrap').innerHTML='<div class="hint" style="margin:0">この日に配置されたスタッフはいません。</div>'; return; }
+  var groups={};
+  list.forEach(function(s){ var g=s.location||'その他'; (groups[g]=groups[g]||[]).push(s); });
+  var order=Object.keys(groups).sort(function(a,b){ // 東口→西口→その他
+    var rank=function(x){return x==='東口'?0:x==='西口'?1:2;}; return rank(a)-rank(b);
+  });
+  var html='';
+  order.forEach(function(g){
+    html+='<div class="gate"><div class="gh"><span class="pin">📍 '+esc(g)+'</span></div>';
+    groups[g].forEach(function(s){
+      html+='<div class="sperson'+(s.collected?' got':'')+'">'
+        +'<div class="av">'+esc(s.name).slice(0,2)+'</div>'
+        +'<div class="pn">'+esc(s.name)+'</div>'
+        +(s.kubun?'<span class="kt '+kubunCls(s.kubun)+'">'+esc(s.kubun)+'</span>':'')
+        +'<div class="mk'+(s.collected?'':' no')+'">'+(s.collected?'✓ 取得済み':'未取得')+'</div>'
+        +'</div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('schedWrap').innerHTML=html;
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* ---- ランキング ---- */
+function rankTab(mode){
+  rankMode=mode;
+  document.getElementById('tAll').classList.toggle('on',mode==='all');
+  document.getElementById('tGrade').classList.toggle('on',mode==='grade');
+  var gt=document.getElementById('gradeTabs');
+  gt.classList.toggle('hidden',mode!=='grade');
+  if(mode==='grade' && !gt.innerHTML){
+    ['高0','高1','高2'].forEach(function(g,i){
+      var b=document.createElement('button'); b.textContent=g;
+      if(String(meGrade)===g||(!meGrade&&i===0)){b.className='on';rankGrade=g;}
+      b.onclick=function(){ document.querySelectorAll('#gradeTabs button').forEach(function(x){x.classList.remove('on');}); b.className='on'; rankGrade=g; loadRanking(); };
+      gt.appendChild(b);
+    });
+    if(!rankGrade) rankGrade=String(meGrade||'高0');
+  }
+  loadRanking();
+}
+var rankFull=[], rankShowAll=false, rankCacheKey=null, rankCacheData=null, rankDirty=true;
+function applyRanking(res){
+  rankFull=(res&&res.ranking)||[]; rankShowAll=false;
+  renderRankList(); renderMeCard();
+  var d=new Date(res.generatedAt);
+  document.getElementById('rankMeta').textContent='更新: '+d.toLocaleString('ja-JP')+'（同点は同順位）';
+}
+/* ランキングもキャッシュ。自分のスタンプ登録時 or「更新」ボタン押下時のみ再取得 */
+function loadRanking(){
+  var key=rankMode+'|'+(rankMode==='grade'?rankGrade:'');
+  if(rankCacheData && rankCacheKey===key && !rankDirty){ applyRanking(rankCacheData); return; }
+  document.getElementById('rankList').innerHTML='<div class="hint">読み込み中… <span class="spin"></span></div>';
+  document.getElementById('moreLink').classList.add('hidden');
+  document.getElementById('meCard').classList.add('hidden');
+  api('ranking',{mode:rankMode, grade:rankMode==='grade'?rankGrade:null}).then(function(res){
+    rankCacheKey=key; rankCacheData=res; rankDirty=false;
+    applyRanking(res);
+  }).catch(function(){ document.getElementById('rankList').innerHTML='<div class="err">読み込みに失敗しました。もう一度お試しください。</div>'; });
+}
+/* 「ランキングを更新」ボタン：押したときだけ最新を取り直す */
+function refreshRanking(){ rankDirty=true; loadRanking(); }
+function rankRowHtml(r){
+  var g=r.rank<=3?'g'+r.rank:'';
+  return '<div class="rank'+(r.id===me?' me':'')+'"><div class="pos '+g+'">'+r.rank+'</div>'
+    +'<div class="id">'+r.id+(r.id===me?' <span class="badge">あなた</span>':'')+'</div>'
+    +'<div class="pt">'+r.points+'<span> pt</span></div></div>';
+}
+function renderRankList(){
+  var head=document.getElementById('rankHead'), ml=document.getElementById('moreLink');
+  if(!rankFull.length){ document.getElementById('rankList').innerHTML='<div class="hint">まだデータがありません</div>'; head.textContent=''; ml.classList.add('hidden'); return; }
+  var list = rankShowAll ? rankFull : rankFull.slice(0,10);
+  document.getElementById('rankList').innerHTML = list.map(rankRowHtml).join('');
+  head.textContent = rankShowAll ? ('全'+rankFull.length+'人') : '上位10名';
+  if(rankFull.length>10){ ml.classList.remove('hidden'); ml.textContent = rankShowAll ? '閉じる ▲' : 'すべてのランキングを見る ▾'; }
+  else ml.classList.add('hidden');
+}
+function toggleAll(){ rankShowAll=!rankShowAll; renderRankList(); }
+function renderMeCard(){
+  var card=document.getElementById('meCard');
+  var idx=-1; for(var i=0;i<rankFull.length;i++){ if(rankFull[i].id===me){ idx=i; break; } }
+  if(idx<0){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  document.getElementById('meRankNum').textContent=rankFull[idx].rank;
+  document.getElementById('meRankUnit').textContent=' 位 / '+rankFull.length+'人中';
+  var s=Math.max(0,idx-2), e=Math.min(rankFull.length, idx+3), html='';
+  for(var j=s;j<e;j++){ var r=rankFull[j];
+    html+='<div class="rank'+(r.id===me?' me':'')+'"><div class="pos">'+r.rank+'</div><div class="id">'+r.id+'</div><div class="pt">'+r.points+'<span> pt</span></div></div>';
+  }
+  document.getElementById('around').innerHTML=html;
+}
+</script>
+</body>
+</html>
